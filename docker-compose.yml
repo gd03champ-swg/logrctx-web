@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+
+  # api container exposing port 8000 (backend)
+  logrctx-backend:
+    image: gd03/logrctx-web:backend
+    container_name: backend
+    environment:
+      - LOKI_URL=http://host.docker.internal:3100/loki/api/v1/query_range
+    ports:
+      - "8000:8000"
+
+  # client container exposing port 3000 (frontend)
+  logrctx-frontend:
+    image: gd03/logrctx-web:frontend
+    container_name: frontend
+    environment:
+      - VITE_API_URL=http://logrctx-backend:8000/reduce
+    depends_on:
+      - logrctx-backend
+    ports:
+      - "3000:3000"

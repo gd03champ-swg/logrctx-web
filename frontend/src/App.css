@@ -1,0 +1,28 @@
+.sidebar-menu-item:hover {
+  color: #40a9ff !important;
+  background: rgba(64, 169, 255, 0.2) !important;
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-select {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.custom-select:hover {
+  border-color: #40a9ff;
+}
+
+.custom-date-picker {
+  border-radius: 4px;
+}
+
+.fetch-logs-btn {
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.fetch-logs-btn:hover {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
