@@ -17,7 +17,7 @@ COPY . .
 EXPOSE 8080
 
 # Define environment variable
-ENV docker buildx create --use
+ENV LOKI_URL http://localhost:3100/loki/api/v1/query_range
 
 # Run app.py when the container launches
 CMD ["python", "app.py"]

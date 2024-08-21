@@ -9,15 +9,15 @@ services:
     environment:
       - LOKI_URL=http://host.docker.internal:3100/loki/api/v1/query_range
     ports:
-      - "8000:8000"
+      - "8080:8080"
 
   # client container exposing port 3000 (frontend)
   logrctx-frontend:
     image: gd03/logrctx-web:frontend
     container_name: frontend
     environment:
-      - VITE_API_URL=http://logrctx-backend:8000/reduce
+      - VITE_API_URL=http://logrctx-backend:8080/reduce
     depends_on:
       - logrctx-backend
     ports:
-      - "3000:3000"
+      - "80:3000"

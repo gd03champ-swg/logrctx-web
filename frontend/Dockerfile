@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm i -g serve
 
-ENV VITE_API_URL=http://localhost:8000/reduce
+ENV VITE_API_URL=https://logrctx-api.swiggyops.de/reduce
 
 RUN npm run build
 

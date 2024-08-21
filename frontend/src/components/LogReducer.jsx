@@ -1,7 +1,7 @@
 // LogReducer.jsx
 import React, { useState, useEffect } from 'react';
 import { Form, Button, DatePicker, Select, Space, Card, notification, Spin } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { AlignCenterOutlined, AliwangwangOutlined, DownloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -14,6 +14,7 @@ const LogReducer = () => {
   const [rawLogsLen, setRawLogsLen] = useState(0);
   const [reducedLogsLen, setReducedLogsLen] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [summarizerLoading, setSummarizerLoading] = useState(false);
   const [pods, setPods] = useState([]);
   const [services, setServices] = useState([]);
 
@@ -310,6 +311,17 @@ const LogReducer = () => {
     fetchMetadata();
   }, []);
 
+  const startSummary = () => {
+    setSummarizerLoading(true);
+    if (logs.length === 0) {
+      openNotification('error', 'No logs to summarize', 'Please fetch logs first');
+      setSummarizerLoading(false); // Add this line to stop the loading state
+      return;
+    }
+    openNotification('success', 'Under Construction 🛠️', 'LLM RAG based summary is being implemented actively. Check back later');
+    setSummarizerLoading(false);
+  };
+
   const openNotification = (type, message, description) => {
     notification[type]({
       message: message,
@@ -355,7 +367,7 @@ const LogReducer = () => {
       setRawLogsLen(response.data.original_len);
       setReducedLogsLen(response.data.reduced_len);
 
-      openNotification('success', 'Logs Fetched Successfully', 'The logs have been successfully reduced and displayed.');
+      openNotification('success', 'Logs Reduced Successfully', 'The logs have been successfully reduced and displayed.');
     } catch (error) {
       console.error('Failed to fetch logs:', error);
       openNotification('error', 'Error Fetching Logs', 'There was an issue fetching the logs. Please try again.');
@@ -364,8 +376,41 @@ const LogReducer = () => {
     }
   };
 
+  // Function to handle the download
+  const handleDownload = () => {
+
+    if (logs.length === 0) {
+      openNotification('error', 'No logs to download', 'Please fetch logs first');
+      return;
+    }
+
+    // Create a Blob with the logs data
+    const blob = new Blob([logs], { type: "text/plain" });
+    // Create a link element and trigger the download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = pod_name + "_" + service_name + "_logrctx_logs.log";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Free up the URL resource
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
+      <Card
+        title="Log Reducer"
+        style={{
+          marginTop: '20px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          width: '100%', 
+        }}
+        bordered={false}
+      >
       <Form
         layout="vertical"
         onFinish={onFinish}
@@ -376,41 +421,50 @@ const LogReducer = () => {
         style={{ maxWidth: '800px', margin: 'auto' }}
       >
         <Space size="middle" style={{ display: 'flex' }}>
-        <Form.Item
+          <Form.Item
             label="Pod Name"
             name="pod_name"
             rules={[{ required: true, message: 'Please select the Pod Name!' }]}
             style={{ flex: 1 }}
-            >
+          >
             <Select
-                placeholder="Select Pod"
-                className="custom-select"
-                onChange={onValueChange}
+              placeholder="Select Pod"
+              className="custom-select"
+              onChange={onValueChange}
+              showSearch  // Add showSearch prop to enable search functionality
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }  // Add filterOption prop to customize search behavior
             >
-                {pods.map((pod) => (
+              {pods.map((pod) => (
                 <Option key={pod} value={pod}>
-                    {pod}
+                  {pod}
                 </Option>
-                ))}
+              ))}
             </Select>
-            </Form.Item>
+          </Form.Item>
 
-
-            <Form.Item
-                label="Service Name"
-                name="service_name"
-                rules={[{ required: true, message: 'Please select the Service Name!' }]}
-                style={{ flex: 1 }}
+          <Form.Item
+            label="Service Name"
+            name="service_name"
+            rules={[{ required: true, message: 'Please select the Service Name!' }]}
+            style={{ flex: 1 }}
+          >
+            <Select 
+              placeholder="Select Service" 
+              className="custom-select"
+              showSearch  // Add showSearch prop to enable search functionality
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }  // Add filterOption prop to customize search behavior
             >
-                <Select placeholder="Select Service" className="custom-select">
-                {services.map((service) => (
-                    <Option key={service} value={service}>
-                    {service}
-                    </Option>
-                ))}
-                </Select>
-            </Form.Item>
-
+              {services.map((service) => (
+                <Option key={service} value={service}>
+                  {service}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
         </Space>
 
         <Form.Item
@@ -418,26 +472,64 @@ const LogReducer = () => {
           name="time_range"
           rules={[{ required: true, message: 'Please select the time range!' }]}
         >
-          <DatePicker.RangePicker showTime format="DD-MM-YYYY HH:mm:ss" style={{ width: '100%' }} className="custom-date-picker" />
+          <DatePicker.RangePicker
+            showTime
+            format="DD-MM-YYYY HH:mm:ss"
+            style={{ width: '100%' }}
+            className="custom-date-picker"
+          />
         </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loading} block className="fetch-logs-btn">
-            {loading ? <Spin /> : 'Fetch Logs'}
-          </Button>
-        </Form.Item>
+        <Space size="middle" style={{ display: 'flex' }}>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<AlignCenterOutlined />}
+              loading={loading}
+              block
+              className="fetch-logs-btn"
+            >
+              {loading ? <Spin /> : 'Reduce Logs'}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              onClick={startSummary}
+              icon={<AliwangwangOutlined />}
+              loading={summarizerLoading}
+              block
+              className="fetch-logs-btn"
+            >
+              {loading ? <Spin /> : 'Summarize'}
+            </Button>
+          </Form.Item>
+        </Space>
       </Form>
+      </Card>
       <Card
-        title="Log Details"
-        style={{ marginTop: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}
+        title="Result"
+        style={{
+          marginTop: '20px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          width: '100%', 
+        }}
         bordered={false}
         actions={[
           <span key="original">Original Logs: {rawLogsLen}</span>,
           <span key="reduced">Reduced Logs: {reducedLogsLen}</span>,
         ]}
       >
+        <Button
+        type="primary"
+        icon={<DownloadOutlined />}
+        style={{ position: 'absolute', top: '10px', right: '10px' }}
+        onClick={handleDownload}
+      />
         <SyntaxHighlighter language="json" style={dracula} showLineNumbers>
-          {logs.length ? JSON.stringify(logs, null, 2) : 'No logs to display'}
+          {logs.length ? JSON.stringify(logs, null, 2) : 'Go on and reduce some logs!'}
         </SyntaxHighlighter>
       </Card>
     </div>

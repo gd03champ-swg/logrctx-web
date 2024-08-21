@@ -1,10 +1,13 @@
+# logrctx-frontend -> logrctx-frontend-headless -> logrctx.swiggy.prod
+# logrctx-backend -> logrctx-backend-headless -> logrctx-api.swiggy.prod:8080
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: logrctx-backend
   namespace: log-reduce
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: logrctx-backend
@@ -20,20 +23,26 @@ spec:
         - name: LOKI_URL
           value: "http://loki-loki-distributed-query-frontend.default:3100/loki/api/v1/query_range"
         ports:
-        - containerPort: 8000
+        - containerPort: 8080
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: logrctx-backend
+  name: logrctx-backend-headless
   namespace: log-reduce
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: logrctx-api.swiggy.prod
+    external-dns.alpha.kubernetes.io/ttl: "5"
 spec:
+  clusterIP: None
   selector:
     app: logrctx-backend
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
 
 ---
 
@@ -43,7 +52,7 @@ metadata:
   name: logrctx-frontend
   namespace: log-reduce
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: logrctx-frontend
@@ -57,20 +66,26 @@ spec:
         image: gd03/logrctx-web:frontend
         env:
         - name: VITE_API_URL
-          value: "http://logrctx-backend:8000/reduce"
+          value: "https://logrctx-api.swiggyops.de/reduce"
         ports:
-        - containerPort: 3000
+        - containerPort: 80
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: logrctx-frontend
+  name: logrctx-frontend-headless
   namespace: log-reduce
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: logrctx.swiggy.prod
+    external-dns.alpha.kubernetes.io/ttl: "5"
 spec:
+  clusterIP: None
   selector:
     app: logrctx-frontend
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 3000
-  type: LoadBalancer
+      targetPort: 80
+  type: ClusterIP
+
