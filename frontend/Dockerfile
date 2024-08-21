@@ -14,6 +14,6 @@ ENV VITE_API_URL=http://localhost:8000/reduce
 
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 80
 
-CMD [ "serve", "-s", "dist" ]
+CMD [ "serve", "-s", "dist", "-l", "80" ]
