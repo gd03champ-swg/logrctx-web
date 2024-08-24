@@ -15,7 +15,7 @@ const Breadcrumbs = () => {
   const pathSnippets = location.pathname.split('/').filter(i => i);
   
   const breadcrumbItems = [
-    <Link to="/" key="dashboard">Logrctx</Link>,
+    <Link to="/" key="dashboard">logrctx</Link>,
     ...pathSnippets.map((_, index) => {
       const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
       return (
@@ -49,18 +49,19 @@ const App = () => {
           onCollapse={(value) => setCollapsed(value)}
         >
           <div style={{ height: '32px', margin: '16px', textAlign: 'center', color: 'white' }}>
-            <Title level={4} style={{ color: 'white', margin: 0 }}>Logrctx</Title>
+          <div id='logo' className="logo" style={{ height: '31px', background: '#333', borderRadius: '6px', margin: '8px 12px 8px 12px'}}></div>
           </div>
           <Menu
             theme="dark"
             mode="inline"
             defaultSelectedKeys={['1']}
+            style={{ height: '100%', marginTop: '25px' }}
           >
             <Menu.Item key="1" icon={<DashboardOutlined />}>
-              <Link to="/">Log Reducer</Link>
+              <Link to="/">Dashboard</Link>
             </Menu.Item>
             <Menu.Item key="2" icon={<FileTextOutlined />}>
-              <Link to="/logrctx-ai">Logrctx AI</Link>
+              <Link to="/logrctx-ai">AI Summarize</Link>
             </Menu.Item>
             <Menu.Item key="3" icon={<SettingOutlined />}>
               <Link to="/settings">Settings</Link>
@@ -72,14 +73,14 @@ const App = () => {
         </Sider>
         <Layout>
           <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-            <Title level={3} style={{ margin: 0 }}>Logrctx Web</Title>
+            <Title level={3} style={{ margin: 0 }}>Logrctx</Title>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Avatar size="large" icon={<UserOutlined />} />
               <span style={{ marginLeft: '8px', color: '#595959' }}>Admin</span>
             </div>
           </Header>
 
-          <Breadcrumbs /> {/* Dynamic Breadcrumbs */}
+          {/*<Breadcrumbs /> {/* Dynamic Breadcrumbs */}
 
           <Content style={{ margin: '24px 16px 0', padding: '24px', transition: 'all 0.3s', backgroundColor: '#fff', borderRadius: '8px' }}>
             <Routes>

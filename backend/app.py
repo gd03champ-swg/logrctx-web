@@ -27,10 +27,13 @@ async def reduce_logs(request: Request):
     try:
         params = await request.json()
 
+        print(params)
+
         service_name = params.get("service_name")
         pod = params.get("pod")
         start_time = params.get("start_time")
         end_time = params.get("end_time")
+        redution_ratio = int(params.get("reduction_rate"))
 
         start_time = datetime.strptime(start_time, "%d-%m-%Y %H:%M:%S")
         end_time = datetime.strptime(end_time, "%d-%m-%Y %H:%M:%S")
@@ -41,7 +44,10 @@ async def reduce_logs(request: Request):
 
         # Reduce logs with Drain3
         print("Reducing logs with Drain3...")
-        reduced_logs, original_len, reduced_len = reduce(raw_logs)
+        reduced_logs, original_len, reduced_len = reduce(
+                                                    raw_logs,
+                                                    reduction_ratio=redution_ratio
+                                                    )
 
         return {
             "message": "Logs reduced successfully!",

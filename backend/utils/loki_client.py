@@ -9,7 +9,8 @@ def get_logs(service_name, pod, start_time, end_time):
         'query': f'{{service="{service_name}"}}',
         'start': int(start_time.timestamp() * 1e9),  # Convert to nanoseconds
         'end': int(end_time.timestamp() * 1e9),      # Convert to nanoseconds
-        'limit': 5000  # Optional: limit the number of log entries
+        'limit': 5000,  # Optional: limit the number of log entries
+        'direction': 'forward'
     }
 
     # Headers for the query
@@ -43,8 +44,8 @@ def get_logs(service_name, pod, start_time, end_time):
     return raw_logs
 
 # Loki URL
-#url = "http://localhost:3100/loki/api/v1/query_range"
-url = os.getenv("LOKI_URL")
+url = "http://localhost:3100/loki/api/v1/query_range"
+#url = os.getenv("LOKI_URL")
 
 # Example usage
 if __name__ == "__main__":

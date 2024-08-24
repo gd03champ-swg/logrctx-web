@@ -15,6 +15,8 @@
     "@remixicon/react": "^4.2.0",
     "antd": "^5.20.1",
     "axios": "^1.7.4",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.1",
