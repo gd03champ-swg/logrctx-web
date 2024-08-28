@@ -1,96 +1,112 @@
 // App.jsx
-import React, { useState } from 'react';
-import { Layout, Menu, Typography, Avatar } from 'antd';
-import { DashboardOutlined, UserOutlined, FileTextOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
-import LogReducer from './components/LogReducer.jsx'; // The Log Reducer component
-import UnderConstruction from './components/UnderConstruction.jsx'; // The Under Construction component
+import React, { useState, useEffect } from 'react';
+import { Layout, Typography, Avatar, Modal } from 'antd';
+import { UserOutlined  } from '@ant-design/icons';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { Breadcrumbs } from './components/Breadcumbs.jsx';
+
+import Dashboard from './pages/Dashboard.jsx'; // The Log Reducer component
+import UnderConstruction from './pages/UnderConstruction.jsx'; // The Under Construction component
+
+import PrivateRoute from './components/PrivateRoute.jsx';  // Import the PrivateRoute component
+import MenuComponent from './components/MenuComponent.jsx';
+import LoginPage from './pages/LoginPage.jsx'; // The Login Page component
+import SignUpPage from './pages/SignUpPage.jsx'; // The SignUp Page component
+import VerificationPage from './pages/VerificationPage.jsx'; // The Verification Page component
+
+import userpool from './handlers/userpool';
+import { logout } from './handlers/auth.js';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Title } = Typography;
 
-// Breadcrumb component that dynamically updates based on the current path
-const Breadcrumbs = () => {
-  const location = useLocation();
-  const pathSnippets = location.pathname.split('/').filter(i => i);
-  
-  const breadcrumbItems = [
-    <Link to="/" key="dashboard">logrctx</Link>,
-    ...pathSnippets.map((_, index) => {
-      const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
-      return (
-        <Link to={url} key={url}>
-          {pathSnippets[index]}
-        </Link>
-      );
-    })
-  ];
-
-  return (
-    <div style={{ margin: '16px', marginTop: '16px', marginLeft: '32px' }}>
-      {breadcrumbItems.map((item, index) => (
-        <span key={index}>
-          {item} {index < breadcrumbItems.length - 1 && '/ '}
-        </span>
-      ))}
-    </div>
-  );
-};
+import './App.css';
 
 const App = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    handleAuthenticated()
+  }, []);
+
+  const handleAuthenticated = async () => {
+    const currentUser = userpool.getCurrentUser();
+    if (currentUser) {
+      currentUser.getSession((err, session) => {
+        if (!err) {
+          setUser(session.getIdToken().payload.email);
+        } else {
+          console.log("No session found")
+        }
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    Modal.confirm({
+      title: 'Logout',
+      content: 'Are you sure you want to logout?',
+      onOk: () => {
+        try {
+          logout();
+          setUser(null);
+          console.log('Logged out successfully');
+        } catch (error) {
+          console.log('Error signing out: ', error);
+        }
+      }
+    });
+  };
 
   return (
     <Router>
       <Layout style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
+
         <Sider
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
         >
           <div style={{ height: '32px', margin: '16px', textAlign: 'center', color: 'white' }}>
-          <div id='logo' className="logo" style={{ height: '31px', background: '#333', borderRadius: '6px', margin: '8px 12px 8px 12px'}}></div>
+          <div id='logo' className="logo, zoom" style={{ height: '31px', background: '#333', borderRadius: '6px', margin: '8px 12px 8px 12px'}}></div>
           </div>
-          <Menu
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={['1']}
-            style={{ height: '100%', marginTop: '25px' }}
-          >
-            <Menu.Item key="1" icon={<DashboardOutlined />}>
-              <Link to="/">Dashboard</Link>
-            </Menu.Item>
-            <Menu.Item key="2" icon={<FileTextOutlined />}>
-              <Link to="/logrctx-ai">AI Summarize</Link>
-            </Menu.Item>
-            <Menu.Item key="3" icon={<SettingOutlined />}>
-              <Link to="/settings">Settings</Link>
-            </Menu.Item>
-            <Menu.Item key="4" icon={<InfoCircleOutlined />}>
-              <Link to="/about">About</Link>
-            </Menu.Item>
-          </Menu>
+          <MenuComponent user={user} handleLogout={handleLogout} />
         </Sider>
+
         <Layout>
+
           <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
             <Title level={3} style={{ margin: 0 }}>Logrctx</Title>
+            { user && 
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Avatar size="large" icon={<UserOutlined />} />
-              <span style={{ marginLeft: '8px', color: '#595959' }}>Admin</span>
+              <span style={{ marginLeft: '8px', color: '#595959' }}>{user}</span>
             </div>
+            }
           </Header>
 
           {/*<Breadcrumbs /> {/* Dynamic Breadcrumbs */}
 
           <Content style={{ margin: '24px 16px 0', padding: '24px', transition: 'all 0.3s', backgroundColor: '#fff', borderRadius: '8px' }}>
             <Routes>
-              <Route path="/" element={<LogReducer />} />
-              <Route path="/logrctx-ai" element={<UnderConstruction />} />
-              <Route path="/settings" element={<UnderConstruction />} />
-              <Route path="/about" element={<UnderConstruction />} />
+
+              <Route path='/verify' element={<VerificationPage />} />
+
+              // Public routes (accesed only if user is not authenticated)
+              <Route path="/login" element={<LoginPage onLoginSuccess={handleAuthenticated} />} />
+              <Route path="/signup" element={<SignUpPage />} />
+
+              // Private routes
+              <Route path="/" element={<PrivateRoute element={Dashboard} />} />
+              <Route path="/logrctx-ai" element={<PrivateRoute element={UnderConstruction} />} />
+              <Route path="/settings" element={<PrivateRoute element={UnderConstruction} />} />
+              <Route path="/about" element={<PrivateRoute element={UnderConstruction} />} />
+
             </Routes>
           </Content>
-          <Footer style={{ textAlign: 'center', background: '#fff', borderTop: '1px solid #e8e8e8' }}>Log Reducer Dashboard ©2024</Footer>
+
+          <Footer style={{ textAlign: 'center', background: '#fff', borderTop: '1px solid #e8e8e8', marginTop: '2%' }}>Log Reducer Dashboard ©2024</Footer>
         </Layout>
       </Layout>
     </Router>

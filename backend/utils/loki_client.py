@@ -44,8 +44,8 @@ def get_logs(service_name, pod, start_time, end_time):
     return raw_logs
 
 # Loki URL
-url = "http://localhost:3100/loki/api/v1/query_range"
-#url = os.getenv("LOKI_URL")
+#url = "http://localhost:3100/loki/api/v1/query_range"
+url = os.getenv("LOKI_URL") + "/loki/api/v1/query_range"
 
 # Example usage
 if __name__ == "__main__":

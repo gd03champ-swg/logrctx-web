@@ -1,6 +1,7 @@
 from utils.loki_client import get_logs
 from utils.drainer import reduce
-from fastapi import FastAPI, Request
+from utils.auth import get_current_user
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from datetime import datetime
@@ -11,20 +12,23 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to your frontend's origin if needed
+    allow_origins=["*"],  # Replace with your frontend's URL
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 @app.post("/reduce")
-async def reduce_logs(request: Request):
+async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
 
     try:
+
+        print("user: ", user.get("email"))
         params = await request.json()
 
         print(params)
@@ -40,6 +44,7 @@ async def reduce_logs(request: Request):
 
         # Get logs from Loki
         print("Getting logs from Loki...")
+
         raw_logs = get_logs(service_name, pod, start_time, end_time)
 
         # Reduce logs with Drain3
@@ -57,7 +62,14 @@ async def reduce_logs(request: Request):
             }
     
     except Exception as e:
+
+        if isinstance(e, ZeroDivisionError):
+            message = "No logs found for given time range."
+            print(message)
+            return {"message": message}
+        
         print(e)
+        return {"message": str(e)}
 
 
 if __name__ == "__main__":

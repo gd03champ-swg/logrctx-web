@@ -27,3 +27,11 @@
   background-color: #1890ff;
   border-color: #1890ff;
 }
+
+.zoom {
+  transition: transform 0.3s ease-in-out;
+}
+
+.zoom:hover {
+  transform: scale(1.125);
+}

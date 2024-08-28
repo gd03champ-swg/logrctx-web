@@ -7,7 +7,10 @@ services:
     image: gd03/logrctx-web:backend
     container_name: backend
     environment:
-      - LOKI_URL=http://host.docker.internal:3100/loki/api/v1/query_range
+      - LOKI_URL=http://host.docker.internal:3100
+      - COGNITO_REGION=ap-southeast-1
+      - COGNITO_USERPOOL_ID = ap-southeast-1_crJBQ7yo6
+      - COGNITO_APP_CLIENT_ID = 4kqil27q4dcielr3vbdqqemkm5
     ports:
       - "8080:8080"
 
@@ -16,7 +19,11 @@ services:
     image: gd03/logrctx-web:frontend
     container_name: frontend
     environment:
-      - VITE_API_URL=http://logrctx-backend:8080/reduce
+      - VITE_API_URL=https://logrctx-api.swiggyops.de
+      - VITE_USER_POOL_ID=ap-southeast-1_crJBQ7yo6
+      - VITE_CLIENT_ID=4kqil27q4dcielr3vbdqqemkm5
+      - VITE_TOKEN_SIGNING_KEY_URL=https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_crJBQ7yo6/.well-known/jwks.json
+      - VITE_COGNITO_DOMAIN=https://logrctx.auth.ap-southeast-1.amazoncognito.com
     depends_on:
       - logrctx-backend
     ports:
