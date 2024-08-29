@@ -28,7 +28,7 @@ const PrivateRoute = ({ element: Element }) => {
       });
 
       // Redirect to login page
-      return <Navigate to="/login" />;
+      window.location.href = '/login';
     }
   })
 
