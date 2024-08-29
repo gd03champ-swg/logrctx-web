@@ -1,14 +1,18 @@
 // LogReducer.jsx
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import debounce from 'lodash.debounce';
-import { Form, Button, DatePicker, Select, Space, Card, notification, Spin } from 'antd';
-import { Input, Collapse, InputNumber, Radio } from 'antd';
+import { Form, Button, DatePicker, Select, Space, Card, notification, Spin, Modal } from 'antd';
+import { Input, Collapse, InputNumber, Radio, Divider, Typography } from 'antd';
+const { Text, Link } = Typography;
 import { AlignCenterOutlined, AliwangwangOutlined, DownloadOutlined} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { service_pod_mapping, all_pods } from '../data/data.js';
 import { fetchReducedLogs } from '../handlers/apiHandlers.js';
+
+import myLogo from '../assets/logo.png';
+import myLogoName from '../assets/logo-name.png';
 
 const { Option } = Select;
 
@@ -32,17 +36,42 @@ const Dashboard = () => {
 
   const [form] = Form.useForm();
 
+  // Global flag to ensure the banner is shown only once
+  let bannerShown = localStorage.getItem('bannerShown') || false; // Check if the banner has been shown
+
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        setPods(all_pods)
-        //setServices([]);
+        setPods(all_pods);
       } catch (error) {
         console.error('Failed to fetch metadata:', error);
       }
     };
     fetchMetadata();
+  
+    if (!bannerShown) { // Check if the banner has been shown
+      bannerShown = true; // Set the flag to true after showing the banner
+      localStorage.setItem('bannerShown', bannerShown); // Store the flag in local storage
+      Modal.info({
+        title: 'Beta Testing',
+        content: (
+          <div style={{ textAlign: 'center', width: '100%' }}>
+            <Space direction="vertical" align="center" style={{ width: '100%' }}>
+              <img src={myLogo} alt="logrctx logo" style={{ width: '120px' }} />
+              <img src={myLogoName} alt="logrctx name logo" style={{ width: '120px', marginBottom: '10px' }} />
+              <Text>This is a beta version of Logrctx. We are still in early stages of development.</Text>
+              <Text>
+                Ping <Link href='https://swiggy.enterprise.slack.com/archives/D071E3Q7U3G'>@GD</Link> for any feedback or feature requests.
+              </Text>
+            </Space>
+          </div>
+        ),
+        onOk() {},
+      });
+    }
+  
   }, []);
+
 
   // time range selection helpers
 
@@ -287,7 +316,7 @@ const Dashboard = () => {
         </Space>
 
         {/* More Options Collapse */}
-        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }}>
+        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} defaultActiveKey={1}>
             <Collapse.Panel header="More Options" key="1">
 
               {/* Reduction Rate Input */}

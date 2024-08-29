@@ -80,6 +80,8 @@ spec:
         image: gd03/logrctx-web:frontend
         imagePullPolicy: Always
         env:
+        - name: VITE_SELF_URL
+          value: https://logrctx.swiggyops.de
         - name: VITE_API_URL
           value: "https://logrctx-api.swiggyops.de"
         - name: VITE_USER_POOL_ID
@@ -89,7 +91,7 @@ spec:
         - name: VITE_TOKEN_SIGNING_KEY_URL
           value: "https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_crJBQ7yo6/.well-known/jwks.json"
         - name: VITE_COGNITO_DOMAIN
-          value: "https://logrctx.auth.ap-southeast-1.amazoncognito.com"
+          value: "logrctx.auth.ap-southeast-1.amazoncognito.com"
         ports:
         - containerPort: 80
         resources:

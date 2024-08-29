@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 const { Title } = Typography;
 
-const MenuComponent = ({ user, handleLogout }) => {
+const MenuComponent = ({ user, handleLogout, collapsed }) => {
   const location = useLocation();
 
   return (
@@ -16,33 +16,33 @@ const MenuComponent = ({ user, handleLogout }) => {
       theme="dark"
       mode="inline"
       selectedKeys={[location.pathname]}
-      style={{ height: '100%', marginTop: '25px' }}
+      style={{ height: '100%', marginTop: collapsed ? '25px' : '75px' }}
     >
       {user && (
         <>
-          <Menu.Item key="/" icon={<DashboardOutlined />}>
+          <Menu.Item className='zoom' key="/" icon={<DashboardOutlined />}>
             <Link to="/">Dashboard</Link>
           </Menu.Item>
-          <Menu.Item key="/logrctx-ai" icon={<AreaChartOutlined />}>
+          <Menu.Item className='zoom' key="/logrctx-ai" icon={<AreaChartOutlined />}>
             <Link to="/logrctx-ai">AI Summarize</Link>
           </Menu.Item>
-          <Menu.Item key="/settings" icon={<SettingOutlined />}>
+          <Menu.Item className='zoom' key="/settings" icon={<SettingOutlined />}>
             <Link to="/settings">Settings</Link>
           </Menu.Item>
-          <Menu.Item key="/about" icon={<InfoCircleOutlined />}>
+          <Menu.Item className='zoom' key="/about" icon={<InfoCircleOutlined />}>
             <Link to="/about">About</Link>
           </Menu.Item>
-          <Menu.Item key="/logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+          <Menu.Item className='zoom' key="/logout" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>
         </>
       )}
       {!user && (
         <>
-          <Menu.Item key="/signup" icon={<UserAddOutlined />}>
+          <Menu.Item className='zoom' key="/signup" icon={<UserAddOutlined />}>
             <Link to="/signup">SignUp</Link>
           </Menu.Item>
-          <Menu.Item key="/login" icon={<LoginOutlined />}>
+          <Menu.Item className='zoom' key="/login" icon={<LoginOutlined />}>
             <Link to="/login">Login</Link>
           </Menu.Item>
         </>

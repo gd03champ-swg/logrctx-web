@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, Avatar, notification, Spin, Typography, Checkbox, Divider, Row, Col } from 'antd';
 import { LockOutlined, MailOutlined, GoogleOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, Navigate } from 'react-router-dom';
@@ -13,13 +13,33 @@ const LoginPage = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginErr, setLoginErr] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);  // Track loading state
 
   const navigate = useNavigate();
 
-  const user = userpool.getCurrentUser();
-  if (user) {
+  useEffect(() => {
+    const user = userpool.getCurrentUser();
+    if (user) {
+      user.getSession((err, session) => {
+        if (!err) {
+          setIsAuthenticated(true); // User is authenticated
+        }
+        setIsPageLoading(false); // End loading state
+      });
+    } else {
+      setIsPageLoading(false); // End loading state if no user
+    }
+  }, []);
+
+  if (isPageLoading) {
+    return <div>Loading...</div>;  // Optionally show a loading state
+  }
+
+  if (isAuthenticated) {
     return <Navigate to="/" />;
   }
+
 
   const handleLogin = async () => {
     setLoading(true);
@@ -31,6 +51,7 @@ const LoginPage = ({ onLoginSuccess }) => {
           description: 'You have successfully logged in.',
         });
         onLoginSuccess(); // Handle any post-login logic here
+        setIsAuthenticated(true);
       })
       .catch((err) => {
         setLoading(false);
@@ -59,10 +80,21 @@ const LoginPage = ({ onLoginSuccess }) => {
   };
 
   const handleSSOLogin = (provider) => {
-    notification.info({
-      message: `Sign in with ${provider}`,
-      description: `${provider} login not implemented.`,
-    });
+    if (provider === 'Swiggy SSO') {
+      const domain = import.meta.env.VITE_COGNITO_DOMAIN // Your Cognito domain
+      const clientId = import.meta.env.VITE_CLIENT_ID; // Your Cognito client ID
+      const redirectUri = import.meta.env.VITE_SELF_URL +'/callback'; // Your redirect URI for local testing
+  
+      const loginUrl = `https://${domain}/login?response_type=token&client_id=${clientId}&redirect_uri=${redirectUri}&identity_provider=SAML`;
+  
+      // Redirect to Cognito hosted UI
+      window.location.href = loginUrl;
+    } else {
+      notification.info({
+        message: `Sign in with ${provider}`,
+        description: `${provider} login not implemented.`,
+      });
+    }
   };
 
   return (

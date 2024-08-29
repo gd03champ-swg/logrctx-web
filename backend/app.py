@@ -28,10 +28,10 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
 
     try:
 
-        print("user: ", user.get("email"))
         params = await request.json()
 
-        print(params)
+        # Logging the requests
+        print("user: ", user.get("email"), " @ ", datetime.now(), " with ", params)
 
         service_name = params.get("service_name")
         pod = params.get("pod")

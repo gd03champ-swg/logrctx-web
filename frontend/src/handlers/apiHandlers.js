@@ -2,7 +2,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-import { getIdToken } from './auth';
+import { getIdToken, getAccessToken } from './auth';
 
 // Configure Axios instance
 const axiosInstance = axios.create({
@@ -15,9 +15,16 @@ const axiosInstance = axios.create({
 // Interceptor to add JWT token to requests
 axiosInstance.interceptors.request.use(
     async (config) => {
-        const token = await getIdToken(); // Get the JWT token
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`; // Attach the token to the Authorization header
+        const idToken = await getIdToken(); // Get the JWT token
+        const accessToken = await getAccessToken(); // Get the access token
+        if (idToken && accessToken) {
+            // Combine the ID token and access token using a pipe (|) as the delimiter
+            const superToken = `${idToken}|${accessToken}`;
+
+            // Attach the combined token to the Authorization header
+            config.headers['Authorization'] = `Bearer ${superToken}`;
+
+            //console.log('Super Token:', superToken);
         }
         return config;
     },
