@@ -1,39 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { notification } from 'antd';
 import userpool from '../handlers/userpool';
+import { useNavigate } from 'react-router-dom';
+
+import LoadingScreen from './LoadingScreen';
 
 const PrivateRoute = ({ element: Element }) => {
-  const user = userpool.getCurrentUser();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);  // Track loading state
 
-  if (!user){
-    // Display notification to the user
-    notification.warning({
-      message: 'Unauthorized',
-      description: 'You must be signed in to access this.',
-      placement: 'topRight',
-    });
+  const navigate = useNavigate();
 
-    // Redirect to login page
-    return <Navigate to="/login" />;
+  useEffect(() => {
+    const user = userpool.getCurrentUser();
+    if (user) {
+      user.getSession((err, session) => {
+        if (!err) {
+          setIsAuthenticated(true); // User is authenticated
+        }
+        setIsPageLoading(false); // End loading state
+      });
+    } else {
+      setIsPageLoading(false); // End loading state if no user
+    }
+  }, []);
+
+  if (isPageLoading) {
+    return <LoadingScreen />; 
   }
 
-  user.getSession((err, session) => {
-    if (err) {
-      // Display notification to the user
-      notification.error({
-        message: 'Session Expired',
-        description: 'Your session has expired. Please sign in again.',
-        placement: 'topRight',
-      });
-
-      // Redirect to login page
-      window.location.href = '/login';
-    }
-  })
-
   // If user is authenticated, render the element
-  return <Element />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  } else {
+    return <Element />;
+  }
+
 };
 
 export default PrivateRoute;

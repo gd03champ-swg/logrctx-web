@@ -14,6 +14,8 @@ import MenuComponent from './components/MenuComponent.jsx';
 import LoginPage from './pages/LoginPage.jsx'; // The Login Page component
 import SignUpPage from './pages/SignUpPage.jsx'; // The SignUp Page component
 import VerificationPage from './pages/VerificationPage.jsx'; // The Verification Page component
+import NotFoundPage from './pages/NotFoundPage.jsx'; // The 404 Page component
+import LoadingScreen from './components/LoadingScreen.jsx';
 import Callback from './components/Callback.jsx'; // The Callback Page component
 
 import myLogo from './assets/logo.png';
@@ -76,7 +78,7 @@ const App = () => {
         >
           <div style={{ height: '32px', margin: '16px', textAlign: 'center', color: 'white' }}>
           {/*<div id='logo' className="logo, zoom" style={{ height: '31px', background: '#333', borderRadius: '6px', margin: '8px 12px 8px 12px'}}></div>*/}
-          <img id='logo' className="zoom" style={{width: '90%', maxWidth: '55px'}} src={myLogo}/>
+          <img id='logo' onClick={() => window.location.href = "/"} className="zoom" style={{width: '90%', maxWidth: '55px'}} src={myLogo}/>
           </div>
           <MenuComponent user={user} handleLogout={handleLogout} collapsed />
         </Sider>
@@ -106,15 +108,20 @@ const App = () => {
               <Route path='/verify' element={<VerificationPage />} />
               <Route path='/callback' element={<Callback />} />
 
-              // Public routes (accesed only if user is not authenticated)
+              {/* Public routes (accesed only if user is not authenticated) */}
               <Route path="/login" element={<LoginPage onLoginSuccess={handleAuthenticated} />} />
               <Route path="/signup" element={<SignUpPage />} />
 
-              // Private routes
+              {/* Private routes */}
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />
               <Route path="/logrctx-ai" element={<PrivateRoute element={UnderConstruction} />} />
               <Route path="/settings" element={<PrivateRoute element={UnderConstruction} />} />
               <Route path="/about" element={<PrivateRoute element={UnderConstruction} />} />
+
+              <Route path='/loading' element={<LoadingScreen />} />
+
+              {/* 404 Route */}
+              <Route path="*" element={<NotFoundPage />} />
 
             </Routes>
           </Content>

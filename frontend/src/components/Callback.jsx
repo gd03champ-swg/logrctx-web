@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import userpool from '../handlers/userpool'; // Existing Cognito pool
 import { authenticateWithSSOTokens } from '../handlers/auth'; // New function for SSO
 
+import LoadingScreen from './LoadingScreen';
+
 const Callback = () => {
   const navigate = useNavigate();
 
@@ -27,7 +29,7 @@ const Callback = () => {
     }
   }, [navigate]);
 
-  return <div>Loading...</div>;
+  return <LoadingScreen />;
 };
 
 export default Callback;

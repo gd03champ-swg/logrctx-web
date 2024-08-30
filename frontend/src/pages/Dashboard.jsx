@@ -2,14 +2,17 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import debounce from 'lodash.debounce';
 import { Form, Button, DatePicker, Select, Space, Card, notification, Spin, Modal } from 'antd';
-import { Input, Collapse, InputNumber, Radio, Divider, Typography } from 'antd';
+import { Input, Collapse, InputNumber, Radio, Divider, Typography, Steps } from 'antd';
 const { Text, Link } = Typography;
+import { LoadingOutlined, SmileOutlined, ProfileOutlined, CloudDownloadOutlined, ProjectOutlined } from '@ant-design/icons';
 import { AlignCenterOutlined, AliwangwangOutlined, DownloadOutlined} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { service_pod_mapping, all_pods } from '../data/data.js';
 import { fetchReducedLogs } from '../handlers/apiHandlers.js';
+
+import Progress from '../components/Progress.jsx';
 
 import myLogo from '../assets/logo.png';
 import myLogoName from '../assets/logo-name.png';
@@ -33,6 +36,15 @@ const Dashboard = () => {
   const [services, setServices] = useState([]);
 
   const [grafanaUrl, setGrafanaUrl] = useState(null);
+
+
+  /// UseStates for steps illustration : wait -> process -> finish
+  const [fetch , setFetch] = useState('wait');
+  const [reduce , setReduce] = useState('wait');
+  const [format , setFormat] = useState('wait');
+  const [display , setDisplay] = useState('wait');
+  ///
+
 
   const [form] = Form.useForm();
 
@@ -71,7 +83,6 @@ const Dashboard = () => {
     }
   
   }, []);
-
 
   // time range selection helpers
 
@@ -138,6 +149,30 @@ const Dashboard = () => {
 
   const onFinish = async (values) => {
     setLoading(true);
+    
+    /// Steps update
+    setFetch('process');
+    setReduce('wait');
+    setFormat('wait');
+    setDisplay('wait');
+    ///
+
+
+    // Steps update -> wait for random 3-6 seconds and update the steps if loading is still true
+    setTimeout(() => {
+      setLoading((loadingState) => {
+        if (loadingState) {
+          setFetch('finish');
+          setReduce('process');
+          setFormat('wait');
+          setDisplay('wait');
+        }
+        return loadingState; // Ensure loading state is returned as is
+      });
+    }, Math.floor(Math.random() * (4000 - 1500) + 1500));
+    ///
+
+
     try {
       // Call the fetchReducedLogs function and pass necessary parameters
       const data = await fetchReducedLogs(values, reductionRate);
@@ -174,6 +209,14 @@ const Dashboard = () => {
       setGrafanaUrl(constructedGrafanaUrl);  // Set the Grafana URL in state
   
       openNotification('success', 'Logs Reduced Successfully', 'The logs have been successfully reduced and displayed.');
+
+      /// Steps update
+      setFetch('finish');
+      setReduce('finish');
+      setFormat('finish');
+      setDisplay('finish');
+      ///
+
     } catch (error) {
 
         // Custom error for network error
@@ -190,9 +233,18 @@ const Dashboard = () => {
 
         console.log('Failed to fetch logs:', error);
         openNotification('error', 'Error Fetching Logs', error.message || 'An error occurred while fetching logs.');
+
+        /// Steps update
+        setFetch('wait');
+        setReduce('wait');
+        setFormat('wait');
+        setDisplay('wait');
+        ///
+
       } finally {
         setLoading(false);
       }
+
   };
   
 
@@ -228,6 +280,9 @@ const Dashboard = () => {
 
   return (
     <div>
+
+      <Progress fetch={fetch} reduce={reduce} format={format} display={display} />
+
       <Card
         title="Log Reducer"
         style={{
@@ -378,7 +433,6 @@ const Dashboard = () => {
         </Space>
       </Form>
       </Card>
-
 
       <Card
         title="Result"

@@ -6,6 +6,8 @@ import { CognitoUserAttribute } from 'amazon-cognito-identity-js';
 
 import userpool from '../handlers/userpool';
 
+import LoadingScreen from '../components/LoadingScreen';
+
 const { Title, Text } = Typography;
 
 const SignUpPage = () => {
@@ -33,7 +35,7 @@ const SignUpPage = () => {
   }, []);
 
   if (isPageLoading) {
-    return <div>Loading...</div>;  // Optionally show a loading state
+    return <LoadingScreen />;  // Optionally show a loading state
   }
 
   if (isAuthenticated) {

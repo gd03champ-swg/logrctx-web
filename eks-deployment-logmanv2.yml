@@ -1,0 +1,142 @@
+# logrctx-frontend -> logrctx-frontend-headless -> logrctx.swiggy.prod -> logrctx.swiggyops.de
+# logrctx-backend -> logrctx-backend-headless -> logrctx-api.swiggy.prod:8080 -> logrctx-api.swiggyops.de
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logrctx-backend
+  namespace: log-reduce
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: logrctx-backend
+  template:
+    metadata:
+      labels:
+        app: logrctx-backend
+
+    spec:
+      containers:
+      - name: backend
+        image: gd03/logrctx-web:backend
+        imagePullPolicy: Always
+        env:
+        - name: LOKI_URL
+          value: "http://loki-query-frontend.logman:3100"
+        - name: COGNITO_REGION
+          value: "ap-southeast-1"
+        - name: COGNITO_USERPOOL_ID
+          value: "ap-southeast-1_crJBQ7yo6"
+        - name: COGNITO_APP_CLIENT_ID
+          value: "4kqil27q4dcielr3vbdqqemkm5"
+        ports:
+        - containerPort: 8080
+        # resources limits and requests
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+      # tolerations and nodeSelector
+      tolerations:
+      - key: nodegroup
+        operator: Equal
+        value: logrctx
+        effect: NoSchedule
+      nodeSelector:
+        karpenter.sh/nodepool: logrctx
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: logrctx-backend-headless
+  namespace: log-reduce
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: logrctx-api.swiggy.prod
+    external-dns.alpha.kubernetes.io/ttl: "5"
+spec:
+  clusterIP: None
+  selector:
+    app: logrctx-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logrctx-frontend
+  namespace: log-reduce
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: logrctx-frontend
+  template:
+    metadata:
+      labels:
+        app: logrctx-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: gd03/logrctx-web:frontend
+        imagePullPolicy: Always
+        env:
+        - name: VITE_SELF_URL
+          value: https://logrctx.swiggyops.de
+        - name: VITE_API_URL
+          value: "https://logrctx-api.swiggyops.de"
+        - name: VITE_USER_POOL_ID
+          value: "ap-southeast-1_crJBQ7yo6"
+        - name: VITE_CLIENT_ID
+          value: "4kqil27q4dcielr3vbdqqemkm5"
+        - name: VITE_TOKEN_SIGNING_KEY_URL
+          value: "https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_crJBQ7yo6/.well-known/jwks.json"
+        - name: VITE_COGNITO_DOMAIN
+          value: "logrctx.auth.ap-southeast-1.amazoncognito.com"
+        ports:
+        - containerPort: 80
+        # resources limits and requests
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+      # tolerations and nodeSelector
+      tolerations:
+      - key: nodegroup
+        operator: Equal
+        value: logrctx
+        effect: NoSchedule
+      nodeSelector:
+        karpenter.sh/nodepool: logrctx
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logrctx-frontend-headless
+  namespace: log-reduce
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: logrctx.swiggy.prod
+    external-dns.alpha.kubernetes.io/ttl: "5"
+spec:
+  clusterIP: None
+  selector:
+    app: logrctx-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+

@@ -6,6 +6,8 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { authenticate } from '../handlers/auth';
 import userpool from '../handlers/userpool';
 
+import LoadingScreen from '../components/LoadingScreen';
+
 const { Title, Text } = Typography;
 
 const LoginPage = ({ onLoginSuccess }) => {
@@ -33,7 +35,7 @@ const LoginPage = ({ onLoginSuccess }) => {
   }, []);
 
   if (isPageLoading) {
-    return <div>Loading...</div>;  // Optionally show a loading state
+    return <LoadingScreen />;  // Optionally show a loading state
   }
 
   if (isAuthenticated) {
