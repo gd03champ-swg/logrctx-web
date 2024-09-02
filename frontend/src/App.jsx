@@ -1,10 +1,9 @@
 // App.jsx
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Avatar, Modal, Button } from 'antd';
+import { Layout, Typography, Avatar, Modal, Button, Breadcrumb } from 'antd';
 import { UserOutlined  } from '@ant-design/icons';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Tag } from "antd";
-import { Breadcrumbs } from './components/Breadcumbs.jsx';
 
 import Dashboard from './pages/Dashboard.jsx'; // The Log Reducer component
 import UnderConstruction from './pages/UnderConstruction.jsx'; // The Under Construction component
@@ -17,6 +16,7 @@ import VerificationPage from './pages/VerificationPage.jsx'; // The Verification
 import NotFoundPage from './pages/NotFoundPage.jsx'; // The 404 Page component
 import LoadingScreen from './components/LoadingScreen.jsx';
 import Callback from './components/Callback.jsx'; // The Callback Page component
+import AnalysisHistory from './pages/AnalysisHistory.jsx';
 
 import myLogo from './assets/logo.png';
 import MyLogoName from './assets/logo-name.png';
@@ -60,12 +60,14 @@ const App = () => {
           logout();
           setUser(null);
           console.log('Logged out successfully');
+          window.location.href = '/login';
         } catch (error) {
           console.log('Error signing out: ', error);
         }
       }
     });
   };
+
 
   return (
     <Router>
@@ -75,6 +77,14 @@ const App = () => {
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
+          style={{
+            position: 'fixed',
+            height: '100vh',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: 1000,
+          }}
         >
           <div style={{ height: '32px', margin: '16px', textAlign: 'center', color: 'white' }}>
           {/*<div id='logo' className="logo, zoom" style={{ height: '31px', background: '#333', borderRadius: '6px', margin: '8px 12px 8px 12px'}}></div>*/}
@@ -83,11 +93,15 @@ const App = () => {
           <MenuComponent user={user} handleLogout={handleLogout} collapsed />
         </Sider>
 
-        <Layout>
+        <Layout 
+          style={{ 
+            marginLeft: collapsed ? 80 : 200 ,
+            transition: 'margin-left 0.3s ease',
+            }}
+          >
 
           <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
             <div style={{display: 'flex', alignItems: 'center', width: '20%'}}>
-            {/*<Title level={3} style={{ margin: 0, fontFamily: 'monospace' }}>Logrctx</Title>*/}
             <img className='zoom' style={{width: '100%', maxWidth: '100px'}} src={MyLogoName}/>
             <Tag style={{height:'50%', marginLeft: '5%'}} color="green">logman v2</Tag>
             <Tag style={{height:'50%', marginLeft: '5%'}} color="yellow">beta</Tag>
@@ -95,12 +109,10 @@ const App = () => {
             { user && 
                 <Button onClick={handleLogout} type="dashed" id="userAvatar" style={{ padding: '20px', display: 'flex', alignItems: 'center' }}>
                   <Avatar size="medium" icon={<UserOutlined />} />
-                  <span>{user}</span>
+                  <span>{ user.split('@')[0].split('.')[0] }</span>
                 </Button>
             }
           </Header>
-
-          {/*<Breadcrumbs /> {/* Dynamic Breadcrumbs */}
 
           <Content style={{ margin: '24px 16px 0', padding: '24px', transition: 'all 0.3s', backgroundColor: '#fff', borderRadius: '8px' }}>
             <Routes>
@@ -114,7 +126,7 @@ const App = () => {
 
               {/* Private routes */}
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />
-              <Route path="/logrctx-ai" element={<PrivateRoute element={UnderConstruction} />} />
+              <Route path="/summary-history" element={<PrivateRoute element={AnalysisHistory} />} />
               <Route path="/settings" element={<PrivateRoute element={UnderConstruction} />} />
               <Route path="/about" element={<PrivateRoute element={UnderConstruction} />} />
 
@@ -131,6 +143,7 @@ const App = () => {
           {/*<Tag style={{marginLeft: '10px'}} color="purple">v0.6</Tag>*/}
             </Footer>
         </Layout>
+
       </Layout>
     </Router>
   );

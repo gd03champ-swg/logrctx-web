@@ -2,11 +2,10 @@
 import React from 'react';
 import { Menu, Typography } from 'antd';
 import { useLocation } from 'react-router-dom';
-import { DashboardOutlined, UserOutlined, FileTextOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { LogoutOutlined, UserAddOutlined, LoginOutlined, AreaChartOutlined } from '@ant-design/icons';
+import { DashboardOutlined, FileDoneOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { LogoutOutlined, UserAddOutlined, LoginOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
-const { Title } = Typography;
 
 const MenuComponent = ({ user, handleLogout, collapsed }) => {
   const location = useLocation();
@@ -23,8 +22,8 @@ const MenuComponent = ({ user, handleLogout, collapsed }) => {
           <Menu.Item className='zoom' key="/" icon={<DashboardOutlined />}>
             <Link to="/">Dashboard</Link>
           </Menu.Item>
-          <Menu.Item className='zoom' key="/logrctx-ai" icon={<AreaChartOutlined />}>
-            <Link to="/logrctx-ai">AI Summarize</Link>
+          <Menu.Item className='zoom' key="/summary-history" icon={<FileDoneOutlined />}>
+            <Link to="/summary-history">AI History</Link>
           </Menu.Item>
           <Menu.Item className='zoom' key="/settings" icon={<SettingOutlined />}>
             <Link to="/settings">Settings</Link>

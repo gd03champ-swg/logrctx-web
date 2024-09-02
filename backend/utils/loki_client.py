@@ -5,13 +5,13 @@ import os
 
 load_dotenv()
 
-def get_logs(service_name, pod, start_time, end_time):
+def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
     # Parameters for the query
     params = {
         'query': f'{{service="{service_name}"}}',
         'start': int(start_time.timestamp() * 1e9),  # Convert to nanoseconds
         'end': int(end_time.timestamp() * 1e9),      # Convert to nanoseconds
-        'limit': 5000,  # Optional: limit the number of log entries
+        'limit': log_cap,
         'direction': 'forward'
     }
 
@@ -38,8 +38,15 @@ def get_logs(service_name, pod, start_time, end_time):
                 raw_logs.append(formatted_log_line)
                 count += 1
                 #print(formatted_log_line, end='')  # Print to console
+    
+    # Recursively reduce log cap if 413 status code is returned
+    elif response.status_code == 413:
+        new_log_cap = log_cap - 500
+        print(f"Log cap exceeded. Reducing log cap to {new_log_cap} and retrying...")
+        return get_logs(service_name, pod, start_time, end_time, new_log_cap)
+
     else:
-        print(f"Error: {response.status_code} - {response.text}")
+        raise RuntimeError(f"{response.status_code} - {response.text}")
 
     # Print the number of log entries written to the file
     print(f"Total log entries written: {count}")

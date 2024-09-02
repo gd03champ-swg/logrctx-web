@@ -32,6 +32,12 @@ const PrivateRoute = ({ element: Element }) => {
 
   // If user is authenticated, render the element
   if (!isAuthenticated) {
+    notification.warning({
+      message: 'Unauthorized',
+      description: 'You must be logged in to access this page.',
+    });
+    // Clear the local storage and redirect to the login page
+    //localStorage.clear();
     return <Navigate to="/login" />;
   } else {
     return <Element />;

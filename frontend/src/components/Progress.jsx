@@ -2,7 +2,7 @@ import React from "react";
 import { LoadingOutlined, SmileOutlined, ProfileOutlined, CloudDownloadOutlined, ProjectOutlined } from '@ant-design/icons';
 import { Steps } from 'antd';
 
-const Progress = ({fetch, reduce, format, display}) => {
+export const ReduceProgress = ({fetch, reduce, format, display}) => {
     return (
         <Steps
         items={[
@@ -31,4 +31,33 @@ const Progress = ({fetch, reduce, format, display}) => {
     )
 }
 
-export default Progress;
+
+export const SummarizeProgress = ({fetch, reduce, format, display}) => {
+    return (
+        <Steps
+        items={[
+          {
+            title: 'Process Logs',
+            status: fetch,
+            icon: fetch == 'process' ? <LoadingOutlined/> :  <CloudDownloadOutlined />,
+          },
+          {
+            title: 'Embed Log Lines',
+            status: reduce,
+            icon: reduce == 'process' ? <LoadingOutlined/> :  <ProjectOutlined />,
+          },
+          {
+            title: 'RAG Over Logs',
+            status: format,
+            icon: format == 'process' ? <LoadingOutlined/> :  <ProfileOutlined />,
+          },
+          {
+            title: 'Generate Summary',
+            status: display,
+            icon: display == 'process' ? <LoadingOutlined/> :  <SmileOutlined />,
+          },
+        ]}
+      />
+    )
+}
+

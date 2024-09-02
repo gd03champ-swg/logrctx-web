@@ -35,3 +35,39 @@
 .zoom:hover {
   transform: scale(1.125);
 }
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), 0 0 10px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2), 0 0 10px rgba(255, 255, 255, 0.1), 0 0 15px rgba(255, 255, 255, 0.05);
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 50% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.glow-button {
+  animation: glow 6s ease-in-out infinite, gradient 6s ease-in-out infinite;
+  background: linear-gradient(270deg, #ff4d4f, #1890ff, #52c41a, #ffa500);
+  background-size: 400% 400%;
+  border: none;
+  color: white;
+  transition: transform 0.6s ease;
+}
+
+.glow-button:hover {
+  transform: scale(1.05);
+}

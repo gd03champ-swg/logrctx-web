@@ -23,12 +23,18 @@ spec:
         env:
         - name: LOKI_URL
           value: "http://loki-loki-distributed-query-frontend.default:3100"
+          
         - name: COGNITO_REGION
           value: "ap-southeast-1"
         - name: COGNITO_USERPOOL_ID
           value: "ap-southeast-1_crJBQ7yo6"
         - name: COGNITO_APP_CLIENT_ID
           value: "4kqil27q4dcielr3vbdqqemkm5"
+
+        - name: LLM_MODEL_ID
+          value: "mistral.mistral-7b-instruct-v0:2"
+        - name: EMBEDDING_MODEL_ID
+          value: "cohere.embed-english-v3"
         ports:
         - containerPort: 8080
         resources:

@@ -2,6 +2,7 @@ from utils.loki_client import get_logs
 from utils.drainer import reduce
 from utils.auth import get_current_user
 from fastapi import FastAPI, Request, Depends
+from utils.rag import generate_rag_response
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from datetime import datetime
@@ -63,11 +64,32 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
     
     except Exception as e:
 
-        if isinstance(e, ZeroDivisionError):
-            message = "No logs found for given time range."
-            print(message)
-            return {"message": message}
+        #if isinstance(e, ZeroDivisionError):
+        #    message = "No logs found for given time range."
+        #    print(message)
+        #    return {"message": message}
         
+        print(e)
+        return {"message": str(e)}
+    
+@app.post("/rag")
+async def generate_rag(request: Request, user: dict = Depends(get_current_user)):
+
+    try:
+        params = await request.json()
+
+        # Logging the requests
+        print("user: ", user.get("email"), " @ ", datetime.now(), "requested rag analysis")
+
+        logs = params.get("logs")
+        query = params.get("query")
+
+        response = generate_rag_response(logs, query, user.get("email"))
+
+        return {"response": response}
+    
+    except Exception as e:
+
         print(e)
         return {"message": str(e)}
 

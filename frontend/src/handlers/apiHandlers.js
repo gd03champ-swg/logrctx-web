@@ -20,6 +20,7 @@ axiosInstance.interceptors.request.use(
         if (idToken && accessToken) {
             // Combine the ID token and access token using a pipe (|) as the delimiter
             const superToken = `${idToken}|${accessToken}`;
+            //console.log('Super Token:', superToken);
 
             // Attach the combined token to the Authorization header
             config.headers['Authorization'] = `Bearer ${superToken}`;
@@ -33,7 +34,7 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-// Function to handle the API request
+// Function to handle reduce API request
 export const fetchReducedLogs = async (values, reductionRate) => {
     const reqBody = {
         pod: values.pod_name,
@@ -43,10 +44,25 @@ export const fetchReducedLogs = async (values, reductionRate) => {
         reduction_rate: reductionRate,
     };
 
-    console.log('Request Body:', reqBody);
+    //console.log('Request Body:', reqBody);
 
     try {
         const response = await axiosInstance.post('/reduce', reqBody);
+        return response.data;
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
+};
+
+// Funciton to handle RAG API request
+export const fetchRAGSummary = async (query, logs) => {
+    try {
+        const reqBody = {
+            query,
+            logs,
+        };
+        const response = await axiosInstance.post('/rag', reqBody);
         return response.data;
     } catch (error) {
         console.error('API request failed:', error);

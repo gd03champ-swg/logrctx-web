@@ -19,10 +19,12 @@ COPY . .
 EXPOSE 8080
 
 # Define environment variables without spaces around the "="
-ENV LOKI_URL=http://loki-loki-distributed-query-frontend.default:3100 \
-    COGNITO_REGION=ap-southeast-1 \
-    COGNITO_USERPOOL_ID=ap-southeast-1_crJBQ7yo6 \
-    COGNITO_APP_CLIENT_ID=4kqil27q4dcielr3vbdqqemkm5
+ENV LOKI_URL=http://loki-loki-distributed-query-frontend.default:3100
+ENV COGNITO_REGION=ap-southeast-1
+ENV COGNITO_USERPOOL_ID=ap-southeast-1_crJBQ7yo6
+ENV COGNITO_APP_CLIENT_ID=4kqil27q4dcielr3vbdqqemkm5
+ENV LLM_MODEL_ID=mistral.mistral-7b-instruct-v0:2
+ENV EMBEDDING_MODEL_ID=cohere.embed-english-v3
 
 # Start the app
 CMD ["python", "app.py"]
