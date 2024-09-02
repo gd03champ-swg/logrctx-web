@@ -15,6 +15,8 @@ def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
         'direction': 'forward'
     }
 
+    print("Params: ", params)
+
     # Headers for the query
     headers = {
         'X-Scope-OrgId': pod

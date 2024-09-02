@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, Depends
 from utils.rag import generate_rag_response
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 app = FastAPI()
@@ -40,8 +40,12 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
         end_time = params.get("end_time")
         redution_ratio = int(params.get("reduction_rate"))
 
-        start_time = datetime.strptime(start_time, "%d-%m-%Y %H:%M:%S")
-        end_time = datetime.strptime(end_time, "%d-%m-%Y %H:%M:%S")
+        # Define IST timezone as UTC+5:30
+        IST = timezone(timedelta(hours=5, minutes=30))
+
+        # Parse the start and end times with IST timezone
+        start_time = datetime.strptime(start_time, "%d-%m-%Y %H:%M:%S").replace(tzinfo=IST)
+        end_time = datetime.strptime(end_time, "%d-%m-%Y %H:%M:%S").replace(tzinfo=IST)
 
         # Get logs from Loki
         print("Getting logs from Loki...")
