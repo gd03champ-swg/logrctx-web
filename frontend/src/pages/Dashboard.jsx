@@ -114,12 +114,11 @@ const Dashboard = () => {
 
   // time range selection helpers
   const predefinedTimeRanges = [
-    { label: 'Last 10 Minutes', value: 1 / 6 },
+    { label: 'Last 5 minutes', value: 5 / 60 },
+    { label: 'Last 10 Minutes', value: 10 / 60 },
+    { label: 'Last 15 Minutes', value: 15 / 60 },
+    { label: 'Last 30 Minutes', value: 30 / 60 },
     { label: 'Last 1 Hour', value: 1 },
-    { label: 'Last 3 Hours', value: 3 },
-    { label: 'Last 6 Hours', value: 6 },
-    { label: 'Last 12 Hours', value: 12 },
-    { label: 'Last 24 Hours', value: 24 },
   ];
 
   const handlePredefinedTimeRange = (value) => {
