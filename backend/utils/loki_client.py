@@ -25,6 +25,7 @@ def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
 
     # Check the response
     if response.status_code == 200:
+        print("Logs fetched successfully.")
         data = response.json()
         count = 0
         raw_logs = []
@@ -38,6 +39,9 @@ def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
                 raw_logs.append(formatted_log_line)
                 count += 1
                 #print(formatted_log_line, end='')  # Print to console
+        
+        if count == 0:
+            raise RuntimeError("No logs found for given time range.")
     
     # Recursively reduce log cap if 413 status code is returned
     elif response.status_code == 413:
