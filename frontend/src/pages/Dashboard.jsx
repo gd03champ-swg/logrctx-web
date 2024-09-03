@@ -114,11 +114,11 @@ const Dashboard = () => {
 
   // time range selection helpers
   const predefinedTimeRanges = [
-    { label: 'Last 5 minutes', value: 5 / 60 },
-    { label: 'Last 10 Minutes', value: 10 / 60 },
-    { label: 'Last 15 Minutes', value: 15 / 60 },
-    { label: 'Last 30 Minutes', value: 30 / 60 },
-    { label: 'Last 1 Hour', value: 1 },
+    { label: '5 min', value: 5 / 60 },
+    { label: '10 min', value: 10 / 60 },
+    { label: '15 min', value: 15 / 60 },
+    { label: '30 min', value: 30 / 60 },
+    { label: '1 hr', value: 1 },
   ];
 
   const handlePredefinedTimeRange = (value) => {
@@ -314,6 +314,8 @@ const Dashboard = () => {
         openNotification('warning', 'Logs Capped', 'The raw logs have been capped at 5000 from start time.');
       }
 
+      openNotification('success', 'Achieved ' + Math.round(((data.reduced_len / data.original_len) * 100 + Number.EPSILON) * 100) / 100 + ' reduction rate.', 'We\'ve brought ' + data.original_len + ' lines down to ' + data.reduced_len + ' .');
+
       // Construct Grafana URL
       const constructedGrafanaUrl = constructGrafanaUrl(
         values.time_range, 
@@ -321,8 +323,6 @@ const Dashboard = () => {
         values.service_name
       );
       setGrafanaUrl(constructedGrafanaUrl);  // Set the Grafana URL in state
-  
-      openNotification('success', 'Logs Reduced Successfully', 'The logs have been successfully reduced and displayed.');
 
       /// Steps update
       setFetch('finish');
@@ -338,7 +338,7 @@ const Dashboard = () => {
       setTimeout(() => {
         setAnimateButton(true);
         // Reset the animation after 3 seconds
-        setTimeout(() => setAnimateButton(false), 6000);
+        setTimeout(() => setAnimateButton(false), 10000);
       }
       , 1500);
 
@@ -493,24 +493,22 @@ const Dashboard = () => {
             </Select>
           </Form.Item>
 
-          {/*Time Range select*/}
-          <Form.Item
-          label="Time Range"
-          name="time_range"
-          rules={[{ required: true, message: 'Please select the time range!' }]}
-          >
-          <DatePicker.RangePicker
-            showTime
-            format="DD-MM HH:mm"
-            style={{ width: '100%' }}
-            className="custom-date-picker"
-          />
+          {/* Add Predefined Time Range Buttons */}
+          <Form.Item label="Quick Time Range Selection">
+            <Button.Group>
+              {predefinedTimeRanges.map(({ label, value }) => (
+                <Button className='zoom' key={value} onClick={() => handlePredefinedTimeRange(value)}>
+                  {label}
+                </Button>
+              ))}
+            </Button.Group>
           </Form.Item>
+
 
         </Space>
 
-        {/* More Options Collapse */}
-        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} defaultActiveKey={1}>
+        {/* More Options Collapse */} {/* defaultActiveKey={1} */}
+        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} > 
             <Collapse.Panel header="More Options" key="1">
 
               {/* Reduction Rate Input */}
@@ -529,16 +527,21 @@ const Dashboard = () => {
                 />
               </Form.Item>
 
-              {/* Add Predefined Time Range Buttons */}
-              <Form.Item label="Quick Time Range Selection">
-                <Button.Group>
-                  {predefinedTimeRanges.map(({ label, value }) => (
-                    <Button className='zoom' key={value} onClick={() => handlePredefinedTimeRange(value)}>
-                      {label}
-                    </Button>
-                  ))}
-                </Button.Group>
-              </Form.Item>
+              {/*Time Range select*/}
+              <Form.Item
+                label="Time Range"
+                name="time_range"
+                rules={[{ required: true, message: 'Please select the time range!' }]}
+                >
+                <DatePicker.RangePicker
+                  showTime
+                  format="DD-MM HH:mm"
+                  style={{ width: '100%' }}
+                  className="custom-date-picker"
+                />
+                </Form.Item>
+
+
             </Collapse.Panel>
           </Collapse>
 
@@ -704,6 +707,7 @@ const Dashboard = () => {
           <div
             style={{
               maxHeight: isFullScreen ? '1000px' : '550px', // Set a fixed height
+              minHeight: '200px', // Set a minimum height
               overflowY: 'scroll', // Enable scrolling within the div
               padding: '16px',
               backgroundColor: '#282a36', // Background color to match SyntaxHighlighter
