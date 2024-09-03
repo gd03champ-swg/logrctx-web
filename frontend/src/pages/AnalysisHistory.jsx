@@ -27,6 +27,16 @@ const AnalysisHistory = () => {
   };
 
   const handleDeleteSummary = (timestamp) => {
+
+    // Cannot delete summary if timestamp is less then 5 mins from now
+    const summaryTimestamp = dayjs(timestamp, 'DD-MM-YYYY HH:mm:ss');
+    const now = dayjs();
+    const diff = now.diff(summaryTimestamp, 'minute');
+    if (diff < 5) {
+      notification.error({ message: 'Cannot delete summary', description: 'Summary cannot be deleted if it is less than 5 minutes old.' });
+      return;
+    }
+
     const updatedSummaries = summaries.filter(summary => summary.timestamp !== timestamp);
     setSummaries(updatedSummaries);
     setFilteredSummaries(updatedSummaries);

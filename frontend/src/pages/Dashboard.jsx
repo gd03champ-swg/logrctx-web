@@ -204,8 +204,8 @@ const Dashboard = () => {
         throw new Error(data.message);
       }
       console.log('Response:', data.response);
-      storeSummary(data.response);
       setLlmResponse(data.response);
+      storeSummary(data.response);
       //writeLlmResponse(data.response);
       openNotification('success', 'Logs Summarized Successfully', 'The logs have been successfully summarized and displayed.');
     } catch (error) {
@@ -218,19 +218,25 @@ const Dashboard = () => {
 
   const storeSummary = (response) => {
     // Save summary along with request info to local storage array
-    const summary = {
-      pod: form.getFieldValue('pod_name'),
-      service: form.getFieldValue('service_name'),
-      timeRange: form.getFieldValue('time_range').map((time) => dayjs(time).format('DD-MM-YYYY HH:mm:ss')),
-      userPrompt: userPrompt,
-      response: response,
-      timestamp: dayjs().format('DD-MM-YYYY HH:mm:ss'),
-    };
-    console.log('Summary Constructed:', summary);
-    const summaries = JSON.parse(localStorage.getItem('summaries')) || [];
-    summaries.push(summary);
-    localStorage.setItem('summaries', JSON.stringify(summaries));
-  };  
+    try{
+      const summary = {
+        pod: form.getFieldValue('pod_name'),
+        service: form.getFieldValue('service_name'),
+        timeRange: timeRange.map((time) => dayjs(time).format('DD-MM-YYYY HH:mm:ss')),
+        userPrompt: userPrompt,
+        response: response,
+        timestamp: dayjs().format('DD-MM-YYYY HH:mm:ss'),
+      };
+      console.log('Summary Constructed:', summary);
+      const summaries = JSON.parse(localStorage.getItem('summaries')) || [];
+      summaries.push(summary);
+      localStorage.setItem('summaries', JSON.stringify(summaries));
+    }
+    catch (error) {
+    console.error('Failed to store summary:', error);
+    openNotification('error', 'Error Storing Summary', error.message || 'An error occurred while storing the summary.');
+  }
+}
 
   const handleCopyClick = async (content) => {
     try {
