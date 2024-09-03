@@ -344,6 +344,8 @@ const Dashboard = () => {
 
     } catch (error) {
 
+        console.log(error)
+
         // Custom error for network error
         if (error.message === 'Network Error') {
           openNotification('error', 'Network Error', 'Couldn\'t connect to the backend. Please check your internet connection.');
@@ -508,7 +510,7 @@ const Dashboard = () => {
         </Space>
 
         {/* More Options Collapse */} {/* defaultActiveKey={1} */}
-        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} > 
+        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} defaultActiveKey={1} > 
             <Collapse.Panel header="More Options" key="1">
 
               {/* Reduction Rate Input */}
