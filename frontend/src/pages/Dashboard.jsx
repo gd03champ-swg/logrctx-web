@@ -43,9 +43,9 @@ const Dashboard = () => {
   const [animateButton, setAnimateButton] = useState(false);
   const [summariesCountInLast5Mins, setSummariesCountInLast5Mins] = useState(0);
 
-  const [pods, setPods] = useState([]);
   const [services, setServices] = useState([]);
-
+  const [timeRange, setTimeRange] = useState([dayjs().subtract(5, 'minutes'), dayjs()]); // Default to last 5 minutes
+  const [selectedQuickRange, setSelectedQuickRange] = useState(5/60); // Track selected quick time range
   const [grafanaUrl, setGrafanaUrl] = useState(null);
 
 
@@ -115,18 +115,27 @@ const Dashboard = () => {
 
   // time range selection helpers
   const predefinedTimeRanges = [
-    { label: '5 min', value: 5 / 60 },
-    { label: '10 min', value: 10 / 60 },
-    { label: '15 min', value: 15 / 60 },
-    { label: '30 min', value: 30 / 60 },
+    { label: '5 mins', value: 5 / 60 },
+    { label: '10 mins', value: 10 / 60 },
+    { label: '15 mins', value: 15 / 60 },
+    { label: '30 mins', value: 30 / 60 },
     { label: '1 hr', value: 1 },
   ];
 
+  // Handle predefined time range selection
   const handlePredefinedTimeRange = (value) => {
     const endTime = dayjs();
     const startTime = endTime.subtract(value, 'hours');
-    form.setFieldsValue({ time_range: [startTime, endTime] });
-  };  
+    setTimeRange([startTime, endTime]);  // Update state
+    setSelectedQuickRange(value);  // Highlight selected quick time range
+    form.setFieldsValue({ time_range: [startTime, endTime] });  // Sync with form
+  };
+
+  // Handle manual time range selection (reset quick select highlight)
+  const handleTimeRangeChange = (dates) => {
+    setTimeRange(dates);
+    setSelectedQuickRange(null);  // Reset quick select highlight
+  };
 
   // Add debounce to search input
   const handleSearch = useCallback(
@@ -273,7 +282,7 @@ const Dashboard = () => {
 
     try {
       // Call the fetchReducedLogs function and pass necessary parameters
-      const data = await fetchReducedLogs(values, reductionRate);
+      const data = await fetchReducedLogs(values, timeRange, reductionRate);
   
       console.log('Response:', data.message);
 
@@ -290,6 +299,7 @@ const Dashboard = () => {
         return;
       }
   
+      // Remove double quotes from the logs
       const myReducedLogs = [];
       data.reduced_logs.forEach((log) => {
         const logObj = log.replace(/["']/g, '');
@@ -309,8 +319,6 @@ const Dashboard = () => {
 
       // Construct Grafana URL
       const constructedGrafanaUrl = constructGrafanaUrl(
-        values.time_range, 
-        values.pod_name, 
         values.service_name
       );
       setGrafanaUrl(constructedGrafanaUrl);  // Set the Grafana URL in state
@@ -344,7 +352,7 @@ const Dashboard = () => {
         }
 
         // Custom error for 403
-        if (error.response.status === 403) {
+        if ( error.response && error.response.status === 403) {
           openNotification('error', 'Unauthorized', 'You are not authorized to access this resource.');
           return;
         }
@@ -365,10 +373,11 @@ const Dashboard = () => {
 
   };
 
-  const constructGrafanaUrl = (time_range, pod, service) => {
-    const from = dayjs(time_range[0]).valueOf(); // Milliseconds since epoch
-    const to = dayjs(time_range[1]).valueOf();
-    const constructedGrafanaUrl = `https://logman.swiggyops.de/d/mkqRUh-Mk/service-logs?orgId=1&var-Pod=${pod}&var-service=${service}&var-search=&var-AND=&from=${from}&to=${to}&viewPanel=2`;
+  const constructGrafanaUrl = (service) => {
+    const from = dayjs(timeRange[0]).valueOf(); // Milliseconds since epoch
+    const to = dayjs(timeRange[1]).valueOf();
+    //const constructedGrafanaUrl = `https://logman.swiggyops.de/d/mkqRUh-Mk/service-logs?orgId=1&var-service=${service}&var-search=&var-AND=&from=${from}&to=${to}&viewPanel=2`;
+    const constructedGrafanaUrl = `https://logmanv2.swiggyops.de/d/cdt0tdse768lcf/service-logs?orgId=1&var-service=${service}&var-Search=&viewPanel=1&from=${from}&to=${to}`
     return constructedGrafanaUrl;
   }
 
@@ -465,8 +474,13 @@ const Dashboard = () => {
           {/* Add Predefined Time Range Buttons */}
           <Form.Item label="Quick Time Range Selection">
             <Button.Group>
-              {predefinedTimeRanges.map(({ label, value }) => (
-                <Button className='zoom' key={value} onClick={() => handlePredefinedTimeRange(value)}>
+            {predefinedTimeRanges.map(({ label, value }) => (
+                <Button
+                  className='zoom'
+                  key={value}
+                  type={selectedQuickRange === value ? 'primary' : 'default'} // Highlight selected button
+                  onClick={() => handlePredefinedTimeRange(value)}
+                >
                   {label}
                 </Button>
               ))}
@@ -477,7 +491,7 @@ const Dashboard = () => {
         </Space>
 
         {/* More Options Collapse */} {/* defaultActiveKey={1} */}
-        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} defaultActiveKey={1} > 
+        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} > 
             <Collapse.Panel header="More Options" key="1">
 
               {/* Reduction Rate Input */}
@@ -507,9 +521,10 @@ const Dashboard = () => {
                   format="DD-MM HH:mm"
                   style={{ width: '100%' }}
                   className="custom-date-picker"
-                />
-                </Form.Item>
-
+                  value={timeRange}  // Bind to state
+                  onChange={handleTimeRangeChange}  // Handle manual change
+                  />
+              </Form.Item>
 
             </Collapse.Panel>
           </Collapse>
@@ -532,7 +547,6 @@ const Dashboard = () => {
         </Space>
       </Form>
       </Card>
-
 
       <Carousel 
         effect="scrollx"

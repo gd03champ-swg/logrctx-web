@@ -282,7 +282,6 @@ export const all_pods = [
     ]
 
 export const all_services = [
-    "checkout",
     "checkout-communication-service",
     "checkout-consumer",
     "checkout-service",
