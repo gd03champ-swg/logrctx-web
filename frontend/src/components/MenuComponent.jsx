@@ -25,11 +25,11 @@ const MenuComponent = ({ user, handleLogout, collapsed }) => {
           <Menu.Item className='zoom' key="/summary-history" icon={<FileDoneOutlined />}>
             <Link to="/summary-history">AI History</Link>
           </Menu.Item>
-          <Menu.Item className='zoom' key="/settings" icon={<SettingOutlined />}>
-            <Link to="/settings">Settings</Link>
-          </Menu.Item>
           <Menu.Item className='zoom' key="/about" icon={<InfoCircleOutlined />}>
             <Link to="/about">About</Link>
+          </Menu.Item>
+          <Menu.Item className='zoom' key="/settings" icon={<SettingOutlined />}>
+            <Link to="/settings">Settings</Link>
           </Menu.Item>
           <Menu.Item className='zoom' key="/logout" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout

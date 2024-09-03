@@ -17,6 +17,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx'; // The 404 Page component
 import LoadingScreen from './components/LoadingScreen.jsx';
 import Callback from './components/Callback.jsx'; // The Callback Page component
 import AnalysisHistory from './pages/AnalysisHistory.jsx';
+import AboutWiki from './pages/AboutWiki.jsx';
 
 import myLogo from './assets/logo.png';
 import MyLogoName from './assets/logo-name.png';
@@ -128,7 +129,7 @@ const App = () => {
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />
               <Route path="/summary-history" element={<PrivateRoute element={AnalysisHistory} />} />
               <Route path="/settings" element={<PrivateRoute element={UnderConstruction} />} />
-              <Route path="/about" element={<PrivateRoute element={UnderConstruction} />} />
+              <Route path="/about" element={<PrivateRoute element={AboutWiki} />} />
 
               <Route path='/loading' element={<LoadingScreen />} />
 
