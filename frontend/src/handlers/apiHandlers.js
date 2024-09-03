@@ -37,7 +37,6 @@ axiosInstance.interceptors.request.use(
 // Function to handle reduce API request
 export const fetchReducedLogs = async (values, reductionRate) => {
     const reqBody = {
-        pod: values.pod_name,
         service_name: values.service_name,
         start_time: dayjs(values.time_range[0]).format('DD-MM-YYYY HH:mm:ss'),
         end_time: dayjs(values.time_range[1]).format('DD-MM-YYYY HH:mm:ss'),

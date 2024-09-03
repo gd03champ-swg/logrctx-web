@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
+def get_logs(service_name, start_time, end_time, log_cap=5000):
     # Parameters for the query
     params = {
         'query': f'{{service="{service_name}"}}',
@@ -17,13 +17,8 @@ def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
 
     print("Params: ", params)
 
-    # Headers for the query
-    headers = {
-        'X-Scope-OrgId': pod
-    }
-
     # Make the GET request to Loki
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, params=params)
 
     # Check the response
     if response.status_code == 200:
@@ -49,7 +44,7 @@ def get_logs(service_name, pod, start_time, end_time, log_cap=5000):
     elif response.status_code == 413:
         new_log_cap = log_cap - 500
         print(f"Log cap exceeded. Reducing log cap to {new_log_cap} and retrying...")
-        return get_logs(service_name, pod, start_time, end_time, new_log_cap)
+        return get_logs(service_name, start_time, end_time, new_log_cap)
 
     else:
         raise RuntimeError(f"{response.status_code} - {response.text}")
@@ -65,9 +60,8 @@ url = os.getenv("LOKI_URL") + "/loki/api/v1/query_range"
 if __name__ == "__main__":
 
     service_name = "sand-scube"
-    pod = "ugc"
     start_time = datetime(2024, 8, 12, 5, 20)
     end_time = datetime(2024, 8, 12, 5, 30)
 
     # Get logs from Loki
-    get_logs(service_name, pod, start_time, end_time)
+    get_logs(service_name, start_time, end_time)

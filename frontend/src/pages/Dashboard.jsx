@@ -12,7 +12,7 @@ import dayjs from 'dayjs';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-import { service_pod_mapping, all_pods } from '../data/data.js';
+import { service_pod_mapping, all_pods, all_services } from '../data/data.js';
 import { fetchReducedLogs, fetchRAGSummary } from '../handlers/apiHandlers.js';
 
 import { ReduceProgress, SummarizeProgress } from '../components/Progress.jsx';
@@ -66,7 +66,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        setPods(all_pods);
+        //setPods(all_pods);
+        setServices(all_services);
       } catch (error) {
         console.error('Failed to fetch metadata:', error);
       }
@@ -238,16 +239,6 @@ const Dashboard = () => {
       description: description,
       placement: 'topRight',
     });
-  };
-
-  const onValueChange = (value) => {
-    console.log("pod changed: ", value);
-    if (value in service_pod_mapping){
-        setServices(service_pod_mapping[value]);
-    } else {
-        setServices([]);
-        openNotification('info', 'No services for this pod', 'Please select any other pod');
-    }
   };
 
   const onFinish = async (values) => {
@@ -447,30 +438,6 @@ const Dashboard = () => {
       >
         {/* Selector space */}
         <Space size="middle" style={{ display: 'flex' }}>
-
-          {/*Pod select*/}
-          <Form.Item
-            label="Pod"
-            name="pod_name"
-            rules={[{ required: true, message: 'Please select the Pod Name!' }]}
-            style={{ flex: 1 , minWidth: '150px'}}
-          >
-            <Select
-              placeholder="Select Pod"
-              className="custom-select"
-              onChange={onValueChange}
-              showSearch  // Add showSearch prop to enable search functionality
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }  // Add filterOption prop to customize search behavior
-            >
-              {pods.map((pod) => (
-                <Option key={pod} value={pod}>
-                  {pod}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
 
           {/*Service name select*/}
           <Form.Item

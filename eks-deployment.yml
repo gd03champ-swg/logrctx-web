@@ -1,3 +1,5 @@
+# deprecated
+
 # logrctx-frontend -> logrctx-frontend-headless -> logrctx.swiggy.prod -> logrctx.swiggyops.de
 # logrctx-backend -> logrctx-backend-headless -> logrctx-api.swiggy.prod:8080 -> logrctx-api.swiggyops.de
 
@@ -51,9 +53,9 @@ kind: Service
 metadata:
   name: logrctx-backend-headless
   namespace: log-reduce
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: logrctx-api.swiggy.prod
-    external-dns.alpha.kubernetes.io/ttl: "5"
+  #annotations:
+  #  external-dns.alpha.kubernetes.io/hostname: logrctx-api.swiggy.prod
+  #  external-dns.alpha.kubernetes.io/ttl: "5"
 spec:
   clusterIP: None
   selector:
@@ -114,9 +116,9 @@ kind: Service
 metadata:
   name: logrctx-frontend-headless
   namespace: log-reduce
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: logrctx.swiggy.prod
-    external-dns.alpha.kubernetes.io/ttl: "5"
+  #annotations:
+  #  external-dns.alpha.kubernetes.io/hostname: logrctx.swiggy.prod
+  #  external-dns.alpha.kubernetes.io/ttl: "5"
 spec:
   clusterIP: None
   selector:

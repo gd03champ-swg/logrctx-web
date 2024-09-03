@@ -35,7 +35,6 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
         print("user: ", user.get("email"), " @ ", datetime.now(), " with ", params)
 
         service_name = params.get("service_name")
-        pod = params.get("pod")
         start_time = params.get("start_time")
         end_time = params.get("end_time")
         redution_ratio = int(params.get("reduction_rate"))
@@ -50,7 +49,7 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
         # Get logs from Loki
         print("Getting logs from Loki...")
 
-        raw_logs = get_logs(service_name, pod, start_time, end_time)
+        raw_logs = get_logs(service_name, start_time, end_time)
 
         # Reduce logs with Drain3
         print("Reducing logs with Drain3...")
