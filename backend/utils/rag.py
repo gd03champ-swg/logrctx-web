@@ -45,6 +45,7 @@ def generate_rag_response(logs, query, user_email):
     Use only the following pieces of context to answer the question at the end. Don't hallucinate or add any extra information.
     Note that the the logs in given context is reduced and will have count of occurence in eol in pattern like (xN) where N denotes number of times the log occured.
     Keep in mind not to talk about what the logs are, it's structure, what they mean or printing logs itself, but to answer the question using the logs by summarizing them.
+    Don't build up a coversation or user response, just answer the question.
     Also the provided below logs are the most relevant logs to the question asked but not all logs and these logs are internal to Swiggy.
     Logs: \n\n {relevant_logs} \n\n
     Question: *{query}*
@@ -83,7 +84,7 @@ def embed_text(text, input_type, truncate):
 
 def perform_similarity_search(embedded_logs, embedded_query, original_logs):
     similarities = cosine_similarity([embedded_query], embedded_logs)
-    best_indices = np.argsort(similarities[0])[-10:]  # Get top 10 relevant lines
+    best_indices = np.argsort(similarities[0])[-8:]  # Get top 10 relevant lines
     return "\n".join([original_logs[i][:2000] for i in best_indices]) # Truncate to 2000 characters in case of long logs
 
 

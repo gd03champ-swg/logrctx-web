@@ -38,9 +38,9 @@ const MenuComponent = ({ user, handleLogout, collapsed }) => {
       )}
       {!user && (
         <>
-          <Menu.Item className='zoom' key="/signup" icon={<UserAddOutlined />}>
+          {/*<Menu.Item className='zoom' key="/signup" icon={<UserAddOutlined />}>
             <Link to="/signup">SignUp</Link>
-          </Menu.Item>
+          </Menu.Item>*/}
           <Menu.Item className='zoom' key="/login" icon={<LoginOutlined />}>
             <Link to="/login">Login</Link>
           </Menu.Item>

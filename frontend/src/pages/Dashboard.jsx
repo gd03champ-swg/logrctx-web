@@ -86,7 +86,10 @@ const Dashboard = () => {
               <img src={myLogoName} alt="logrctx name logo" style={{ width: '120px', marginBottom: '10px' }} />
               <Text>This is a beta version of Logrctx. We are still in early stages of development.</Text>
               <Text>
-                Ping <Link href='https://swiggy.enterprise.slack.com/archives/D071E3Q7U3G'>@GD</Link> for any feedback or feature requests.
+                Please read the <Link href='/about'>about page</Link> for more information on how to use the tool.
+              </Text>
+              <Text>
+                Reach out to <Link href='https://swiggy.enterprise.slack.com/archives/C6P2C6938'>#devops-help</Link> for any feedback or feature requests.
               </Text>
             </Space>
           </div>

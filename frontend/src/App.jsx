@@ -12,6 +12,7 @@ import PrivateRoute from './components/PrivateRoute.jsx';  // Import the Private
 import MenuComponent from './components/MenuComponent.jsx';
 import LoginPage from './pages/LoginPage.jsx'; // The Login Page component
 import SignUpPage from './pages/SignUpPage.jsx'; // The SignUp Page component
+import LoginPageHidden from './pages/LoginPageHidden.jsx'; // The Hidden Login Page component
 import VerificationPage from './pages/VerificationPage.jsx'; // The Verification Page component
 import NotFoundPage from './pages/NotFoundPage.jsx'; // The 404 Page component
 import LoadingScreen from './components/LoadingScreen.jsx';
@@ -123,7 +124,11 @@ const App = () => {
 
               {/* Public routes (accesed only if user is not authenticated) */}
               <Route path="/login" element={<LoginPage onLoginSuccess={handleAuthenticated} />} />
-              <Route path="/signup" element={<SignUpPage />} />
+              {/*<Route path="/signup" element={<SignUpPage />} />*/}
+
+              {/* Hidden routes */}
+              <Route path="/login-hidden-manual" element={<LoginPageHidden onLoginSuccess={handleAuthenticated} />} />
+              
 
               {/* Private routes */}
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />

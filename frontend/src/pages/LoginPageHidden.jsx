@@ -10,7 +10,7 @@ import LoadingScreen from '../components/LoadingScreen';
 
 const { Title, Text } = Typography;
 
-const LoginPage = ({ onLoginSuccess }) => {
+const LoginPageHidden = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -127,7 +127,6 @@ const LoginPage = ({ onLoginSuccess }) => {
           Please log in to continue
         </Text>
 
-        {/*
         <Form layout="vertical" onFinish={handleLogin}>
           <Form.Item
             name="email"
@@ -176,9 +175,9 @@ const LoginPage = ({ onLoginSuccess }) => {
           </div>
         )}
 
-        <Divider>Or</Divider> */}
+        <Divider>Or</Divider>
 
-        {/*<Button
+        <Button
           icon={<GoogleOutlined />}
           size="large"
           block
@@ -186,7 +185,7 @@ const LoginPage = ({ onLoginSuccess }) => {
           onClick={() => handleSSOLogin('Google')}
         >
           Sign in with Google
-        </Button>*/}
+        </Button>
 
         <Button
           icon={<UserOutlined />}
@@ -202,4 +201,4 @@ const LoginPage = ({ onLoginSuccess }) => {
   );
 };
 
-export default LoginPage;
+export default LoginPageHidden;
