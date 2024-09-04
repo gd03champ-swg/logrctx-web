@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-def get_logs(service_name, start_time, end_time, log_cap=5000):
+def get_logs(service_name, start_time, end_time, log_cap=10000):
     # Parameters for the query
     params = {
         'query': f'{{service="{service_name}"}}',

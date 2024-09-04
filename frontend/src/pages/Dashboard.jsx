@@ -342,8 +342,8 @@ const Dashboard = () => {
       setReducedLogsLen(data.reduced_len);
   
       // Inform users if raw logs are capped at 5000
-      if (data.original_len === 5000) {
-        openNotification('warning', 'Logs Capped', 'The raw logs have been capped at 5000 from start time.');
+      if (data.original_len === 10000) {
+        openNotification('warning', 'Logs Capped', 'The raw logs have been capped at 10000 from start time.');
       }
 
       openNotification('success', 'Achieved ' + Math.round(((data.reduced_len / data.original_len) * 100 + Number.EPSILON) * 100) / 100 + ' reduction rate.', 'We\'ve brought ' + data.original_len + ' lines down to ' + data.reduced_len + ' .');

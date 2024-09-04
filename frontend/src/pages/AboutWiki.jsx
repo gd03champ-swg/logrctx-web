@@ -151,7 +151,7 @@ const AboutWiki = () => {
                   <ExclamationCircleOutlined /> Knowing the Limits
                 </Title>
                 <Paragraph>
-                  Logrctx retrieves only the first 5000 log lines from the selected start time. To ensure precise analysis, select a narrower time range that aligns with the specific logs you wish to analyze.
+                  Logrctx retrieves the first 10,000 log lines from the selected start time. To ensure precise analysis, select a narrower time range that aligns with the specific logs you wish to analyze.
                   This limitation is due to the Loki API constraints, so please be mindful when setting the time range.
                 </Paragraph>
               </div>

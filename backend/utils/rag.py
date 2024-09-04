@@ -45,7 +45,7 @@ def generate_rag_response(logs, query, user_email):
     Use only the following pieces of context to answer the question at the end. Don't hallucinate or add any extra information.
     Note that the the logs in given context is reduced and will have count of occurence in eol in pattern like (xN) where N denotes number of times the log occured.
     Keep in mind not to talk about what the logs are, it's structure, what they mean or printing logs itself, but to answer the question using the logs by summarizing them.
-    Don't build up a coversation or user response, just answer the question.
+    Don't build up a coversation or user response, just answer the question.Keep in mind that you have only limitted tokens to respond, just enough for a comprehensive summary.
     Also the provided below logs are the most relevant logs to the question asked but not all logs and these logs are internal to Swiggy.
     Logs: \n\n {relevant_logs} \n\n
     Question: *{query}*

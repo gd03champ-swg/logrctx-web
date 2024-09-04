@@ -1,1 +1,21 @@
-print("\n\n        Based on the logs, there have been multiple instances of 'Got PartnerFeeResponse Async' messages being received. Each message contains a PartnerFeeResponse object with a fee_info interface, which includes fees, pricing_info, and tax_info. The fees consist of a delivery fee with a base_price, total_tax, and effective_price. The pricing_info contains the base_price in INR and the total_tax in INR with a value of 2 and nanos varying from 100000000 to 600000000. The effective_price also varies from 44 to 54 INR. The tax_info contains taxes with type GST, CGST, SGST, and IGST, with a value of 5% for all and sub_taxes with CGST and SGST having a value of 2.5% each.\n\n        There doesn't seem to be any significant variation in the values between the logs, but it's important to note that there are multiple instances of this response being received. If there's a concern about the consistency of the pricing or tax information, further investigation may be required.\n\n        Additionally, it's worth noting that the logs do not indicate any errors or exceptions being thrown during the receipt of these PartnerFeeResponse messages. However, it's important to ensure that the system is handling these messages correctly and that the pricing and tax information is being applied appropriately.\n\n        In summary, the logs indicate that multiple PartnerFeeResponse messages have been received with consistent pricing and tax information, but it's important to ensure that the system is handling these messages correctly and that there's no inconsistency in the pricing or tax information.")
+import requests
+import json
+import datetime
+import pytz
+
+host = 'logrctx'
+curr_datetime = datetime.datetime.now(pytz.timezone('Asia/Yekaterinburg')).isoformat('T')
+msg = '[WARN] On server {host} detected error'.format(host=host)
+
+url = 'http://127.0.0.1:3100/loki/api/v1/push'
+headers = {'Content-type': 'application/json'}
+payload = {
+    'streams': [{
+        'labels': f'service="logrctx", host="{host}"',
+        'entries': [{'ts': curr_datetime, 'line': msg}]
+    }]
+}
+
+response = requests.post(url, json=payload, auth=('swiggy-admin-user', 'FVEdQ9m08RAiOx2g9Ayi5kaGO3yIlqiPXSSHoSYE'))
+print(response.status_code)
+print(response.text)
