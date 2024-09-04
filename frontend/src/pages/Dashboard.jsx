@@ -22,6 +22,7 @@ import myLogoName from '../assets/logo-name.png';
 
 const { Option } = Select;
 
+
 const Dashboard = () => {
   
   const [reductionRate, setReductionRate] = useState(15);
@@ -73,6 +74,8 @@ const Dashboard = () => {
       }
     };
     fetchMetadata();
+
+    updateParamsFromUrl();
   
     if (!bannerShown) { // Check if the banner has been shown
       bannerShown = true; // Set the flag to true after showing the banner
@@ -124,6 +127,25 @@ const Dashboard = () => {
     { label: '30 mins', value: 30 / 60 },
     { label: '1 hr', value: 1 },
   ];
+
+  // Update parameters from url embed
+  const updateParamsFromUrl = () => {
+    // Check URL parameters
+    const searchParams = new URLSearchParams(window.location.search);
+    const service_name = searchParams.get('service_name');
+    const start_time = searchParams.get('start_time');
+    const end_time = searchParams.get('end_time');
+
+    if (service_name) {
+      form.setFieldsValue({ service_name });
+    }
+    if (start_time && end_time) {
+      const startTime = dayjs(start_time);
+      const endTime = dayjs(end_time);
+      setTimeRange([startTime, endTime]);
+      form.setFieldsValue({ time_range: [startTime, endTime] });
+    }
+  }
 
   // Handle predefined time range selection
   const handlePredefinedTimeRange = (value) => {
