@@ -1,13 +1,10 @@
-# logrctx-frontend -> logrctx-frontend-headless -> logrctx.swiggy.prod -> logrctx.swiggyops.de
-# logrctx-backend -> logrctx-backend-headless -> logrctx-api.swiggy.prod:8080 -> logrctx-api.swiggyops.de
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: logrctx-backend
   namespace: logrctx # change this
 spec:
-  replicas: 2
+  replicas: 10
   selector:
     matchLabels:
       app: logrctx-backend
@@ -42,7 +39,6 @@ spec:
           value: mistral.mistral-large-2407-v1:0
         - name: EMBEDDING_MODEL_ID
           value: cohere.embed-english-v3
-
 
         ports:
         - containerPort: 8080
@@ -102,8 +98,8 @@ spec:
       - name: frontend
         image: gd03/logrctx-web:frontend
         imagePullPolicy: Always
+        # Environment Variables
         env:
-
         - name: VITE_SELF_URL
           value: https://logrctx.swiggyops.de
         - name: VITE_API_URL
@@ -117,7 +113,7 @@ spec:
           value: "https://cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_crJBQ7yo6/.well-known/jwks.json"
         - name: VITE_COGNITO_DOMAIN
           value: "logrctx.auth.ap-southeast-1.amazoncognito.com"
-          
+
         ports:
         - containerPort: 80
         # resources limits and requests
@@ -156,3 +152,6 @@ spec:
       targetPort: 80
   type: ClusterIP
 --- 
+
+# logrctx-frontend -> logrctx-frontend-headless -> logrctx.swiggy.prod -> logrctx.swiggyops.de
+# logrctx-backend -> logrctx-backend-headless -> logrctx-api.swiggy.prod:8080 -> logrctx-api.swiggyops.de

@@ -5,10 +5,19 @@ import os
 
 load_dotenv()
 
-def get_logs(service_name, start_time, end_time, log_cap=10000):
+def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000):
+
+    # Construct the base query
+    query = f'{{service="{service_name}"}}'
+
+    # If error_logs_only is True, modify the query to fetch only error logs
+    if error_logs_only:
+        # Assuming the log level for errors is stored under the 'level' label
+        query += ' |= "error"'
+
     # Parameters for the query
     params = {
-        'query': f'{{service="{service_name}"}}',
+        'query': query,
         'start': int(start_time.timestamp() * 1e9),  # Convert to nanoseconds
         'end': int(end_time.timestamp() * 1e9),      # Convert to nanoseconds
         'limit': log_cap,
@@ -44,7 +53,7 @@ def get_logs(service_name, start_time, end_time, log_cap=10000):
     elif response.status_code == 413:
         new_log_cap = log_cap - 500
         print(f"Log cap exceeded. Reducing log cap to {new_log_cap} and retrying...")
-        return get_logs(service_name, start_time, end_time, new_log_cap)
+        return get_logs(service_name, start_time, end_time, error_logs_only, new_log_cap)
 
     else:
         raise RuntimeError(f"{response.status_code} - {response.text}")

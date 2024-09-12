@@ -119,3 +119,15 @@ export const getIdToken = () => {
         return Promise.reject(new Error("No user is currently logged in."));
     }
 };
+
+// Get super token for API requests
+export const getSuperToken = async () => {
+    const idToken = await getIdToken(); // Get the JWT token
+    const accessToken = await getAccessToken(); // Get the access token
+    if (idToken && accessToken) {
+        // Combine the ID token and access token using a pipe (|) as the delimiter
+        const superToken = `${idToken}|${accessToken}`;
+        return superToken;
+    }
+    return null;
+};

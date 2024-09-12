@@ -23,6 +23,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
+
     return {"Hello": "World"}
 
 @app.post("/reduce")
@@ -30,15 +31,24 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
 
     try:
 
+        # If requestSource is available in headers, then it is a request from the frontend
+        if request.headers.get('referer'):
+            print("Request from: ", request.headers.get('referer'))
+        else:
+            print("Request directly through API call.")
+
+
         params = await request.json()
 
         # Logging the requests
         print("user: ", user.get("email"), " @ ", datetime.now(), " with ", params)
 
+
         service_name = params.get("service_name")
         start_time = params.get("start_time")
         end_time = params.get("end_time")
         redution_ratio = int(params.get("reduction_rate"))
+        error_logs_only = params.get("error_logs_only", False)
 
         # Define IST timezone as UTC+5:30
         IST = timezone(timedelta(hours=5, minutes=30))
@@ -50,7 +60,7 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
         # Get logs from Loki
         print("Getting logs from Loki...")
 
-        raw_logs = get_logs(service_name, start_time, end_time)
+        raw_logs = get_logs(service_name, start_time, end_time, error_logs_only)
 
         # Reduce logs with Drain3
         print("Reducing logs with Drain3...")
@@ -79,6 +89,13 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
 @app.post("/rag")
 async def generate_rag(request: Request, user: dict = Depends(get_current_user)):
 
+    # If requestSource is available in headers, then it is a request from the frontend
+    if request.headers.get('referer'):
+        print("Request from: ", request.headers.get('referer'))
+    else:
+        print("Request directly through API call.")
+
+
     try:
         params = await request.json()
 
@@ -99,6 +116,12 @@ async def generate_rag(request: Request, user: dict = Depends(get_current_user))
     
 @app.post("/rag-comparitive")
 async def generate_comparative_rag(request: Request, user: dict = Depends(get_current_user)):
+
+    # If requestSource is available in headers, then it is a request from the frontend
+    if request.headers.get('referer'):
+        print("Request from: ", request.headers.get('referer'))
+    else:
+        print("Request directly through API call.")
 
     try:
         params = await request.json()

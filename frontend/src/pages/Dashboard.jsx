@@ -1,43 +1,39 @@
 // LogReducer.jsx
 import React,{ useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import debounce from 'lodash.debounce';
-import { Form, Button, DatePicker, Select, Space, Card, notification, Spin, Modal, Popover, FloatButton } from 'antd';
-import { Input, Collapse, InputNumber, Radio, Typography, Carousel, Skeleton, Divider, Slider, Drawer } from 'antd';
-const { Text, Link, Paragraph } = Typography;
-import { DoubleRightOutlined, DoubleLeftOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import { AlignCenterOutlined, AliwangwangOutlined, DownloadOutlined, InfoCircleOutlined, SearchOutlined, QuestionCircleOutlined} from '@ant-design/icons';
+import { Form, Select, Space, notification, Spin, Modal } from 'antd';
+import { Typography, Carousel } from 'antd';
+const { Text, Link } = Typography;
 
 import dayjs from 'dayjs';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { service_pod_mapping, all_pods, all_services } from '../data/data.js';
 import { fetchReducedLogs, fetchRAGSummary, fetchComparitiveRAGSummary } from '../handlers/apiHandlers.js';
 
 import { ReduceProgress } from '../components/Progress.jsx';
 
-import AnalysisHistory from './AnalysisHistory.jsx';
-
 import myLogo from '../assets/logo.png';
 import myLogoName from '../assets/logo-name.png';
-import AboutWiki from './AboutWiki.jsx';
 
 import LogsDisplaySection from '../components/LogsDisplaySection.jsx';
 import SummaryDisplaySection from '../components/SummaryDisplaySection.jsx';
 import InputSection from '../components/InputsSection.jsx';
-
-const { Option } = Select;
+import { isError } from 'lodash';
 
 
 const Dashboard = () => {
   
   const [reductionRate, setReductionRate] = useState(15);
-  
+  const [services, setServices] = useState([]);
+  const [timeRange, setTimeRange] = useState([dayjs().subtract(5, 'minutes'), dayjs()]); // Default to last 5 minutes
+  const [selectedQuickRange, setSelectedQuickRange] = useState(5/60); // Track selected quick time range
+  const [userPrompt, setUserPrompt] = useState("Summarize and bring up any anomalies in the logs")
+  const [errorLogsOnly, setErrorLogsOnly] = useState(false); // Track is error logs only retrieved
+
   const [logs, setLogs] = useState([]);
   const [logs2, setLogs2] = useState([]);
-  const [llmResponse, setLlmResponse] = useState("");
 
-  const [userPrompt, setUserPrompt] = useState("Summarize and bring up any anomalies in the logs")
+  const [llmResponse, setLlmResponse] = useState("");
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnly, setShowOnly] = useState('');
@@ -53,16 +49,11 @@ const Dashboard = () => {
   const [animateButton, setAnimateButton] = useState(false);
   const [summariesCountInLast5Mins, setSummariesCountInLast5Mins] = useState(0);
   const [comparitiveSummariesCountInLast10Mins, setComparitiveSummariesCountInLast10Mins] = useState(0);
-
-  const [services, setServices] = useState([]);
-  const [timeRange, setTimeRange] = useState([dayjs().subtract(5, 'minutes'), dayjs()]); // Default to last 5 minutes
-  const [selectedQuickRange, setSelectedQuickRange] = useState(5/60); // Track selected quick time range
+  
   const [grafanaUrl, setGrafanaUrl] = useState(null);
   const [grafanaUrl2, setGrafanaUrl2] = useState(null); // Though updated, not used for now
 
   const [dualServiceCompare, setDualServiceCompare] = useState(false);
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // UseStates for steps illustration : wait -> process -> finish
   const [fetch , setFetch] = useState('wait');
@@ -381,7 +372,7 @@ const Dashboard = () => {
 
     try {
       // Call the fetchReducedLogs function and pass necessary parameters
-      const data = await fetchReducedLogs(values.service_name, timeRange, reductionRate);
+      const data = await fetchReducedLogs(values.service_name, timeRange, reductionRate, errorLogsOnly);
   
       console.log('Response:', data.message);
 
@@ -518,7 +509,7 @@ const Dashboard = () => {
 
     try {
       // Call the fetchReducedLogs function and pass necessary parameters
-      const data = await fetchReducedLogs(values.service_2_name, timeRange, reductionRate);
+      const data = await fetchReducedLogs(values.service_2_name, timeRange, reductionRate, errorLogsOnly);
   
       console.log('Response:', data.message);
 
@@ -674,24 +665,6 @@ const Dashboard = () => {
   return (
     <div>
 
-    <FloatButton
-      icon={<QuestionCircleOutlined />}
-      type="default"
-      onClick={() => setDrawerOpen(true)}
-      style={{
-        insetInlineEnd: 68,
-      }}
-    />
-
-      <Drawer
-       title="Help" 
-       onClose={() => setDrawerOpen(false)} 
-       open={drawerOpen}
-       width={1000}
-       >
-        <AboutWiki />
-      </Drawer>
-
       {/* Progress bar */}
       <ReduceProgress fetch={fetch} reduce={reduce} format={format} display={display} />
 
@@ -707,6 +680,8 @@ const Dashboard = () => {
         selectedQuickRange={selectedQuickRange}
         dualServiceCompare={dualServiceCompare}
         toggleDualServiceCompare={toggleDualServiceCompare}
+        errorLogsOnly={errorLogsOnly}
+        setErrorLogsOnly={setErrorLogsOnly}
       />
 
       <Carousel 

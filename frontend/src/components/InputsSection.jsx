@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Form, Select, Button, Slider, DatePicker, Collapse, Space, Spin, Popover } from 'antd';
+import { Card, Form, Select, Button, Slider, DatePicker, Collapse, Space, Spin, Tooltip } from 'antd';
 import { AlignCenterOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 const InputSection = ({
@@ -14,7 +14,9 @@ const InputSection = ({
     reductionRate,
     setReductionRate,
     loading,
-    onFinish
+    onFinish,
+    errorLogsOnly,
+    setErrorLogsOnly,
 }) => {
 
       // time range selection helpers
@@ -101,7 +103,7 @@ const InputSection = ({
 
             {/* Add Dual Service Compare Button */}
             <Form.Item>
-                <Popover title="Toggle dual service mode" trigger="hover">
+                <Tooltip title="Toggle dual service mode">
                 <Button
                     type="primary"
                     onClick={toggleDualServiceCompare}
@@ -121,7 +123,7 @@ const InputSection = ({
                     }}
                     />
                 </Button>
-                </Popover>
+                </Tooltip>
             </Form.Item>
 
             {/* Add Predefined Time Range Buttons */}
@@ -183,9 +185,37 @@ const InputSection = ({
                     />
                 </Form.Item>
 
+                {/* Error Logs Only Checkbox */}
+                <Space
+                    size="middle"
+                    style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                >
+                    <Form.Item
+                        name="error_logs_only"
+                        valuePropName="checked"
+                    >
+                        <Button 
+                            disabled // disbaled due to loki query not working temporarily
+                            onClick={() => setErrorLogsOnly(!errorLogsOnly)}
+                            style={{ 
+                                //backgroundColor: errorLogsOnly ? '#ff4d4f' : '#1890ff',
+                                //color: '#fff',
+                            }}
+                        >
+                            {errorLogsOnly ? 'Error logs only' : 'All logs'}
+                        </Button>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button disabled >
+                            Direct RAG
+                        </Button>
+                    </Form.Item>
+                </Space>
+
                 </Collapse.Panel>
             </Collapse>
 
+            
             <Space size="middle" style={{ display: 'flex' }}>
 
             <Form.Item>
@@ -202,6 +232,7 @@ const InputSection = ({
             </Form.Item>
 
             </Space>
+
         </Form>
       </Card>
     );

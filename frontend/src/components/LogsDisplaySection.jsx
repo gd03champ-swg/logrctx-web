@@ -151,7 +151,7 @@ const LogsDisplaySection = ({
             </Button>
           </Space>
 
-          <Collapse accordion defaultActiveKey={1}>
+          <Collapse accordion bordered={false} defaultActiveKey={1}>
             <Collapse.Panel header={form.getFieldValue('service_name') ? form.getFieldValue('service_name') : "Service Logs"} key="1">
               <div
                 style={{
@@ -190,7 +190,7 @@ const LogsDisplaySection = ({
             </Collapse.Panel>
 
             {logs2.length > 0 && (
-            <Collapse.Panel header={form.getFieldValue('service_2_name') ? form.getFieldValue('service_2_name') : "Service 2 Logs"} key="2">
+            <Collapse.Panel bordered={false} header={form.getFieldValue('service_2_name') ? form.getFieldValue('service_2_name') : "Service 2 Logs"} key="2">
               <div
                 style={{
                   marginTop: '20px',

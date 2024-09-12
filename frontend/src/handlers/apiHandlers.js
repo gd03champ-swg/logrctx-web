@@ -2,7 +2,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-import { getIdToken, getAccessToken } from './auth';
+import { getSuperToken } from './auth';
 
 // Configure Axios instance
 const axiosInstance = axios.create({
@@ -15,12 +15,8 @@ const axiosInstance = axios.create({
 // Interceptor to add JWT token to requests
 axiosInstance.interceptors.request.use(
     async (config) => {
-        const idToken = await getIdToken(); // Get the JWT token
-        const accessToken = await getAccessToken(); // Get the access token
-        if (idToken && accessToken) {
-            // Combine the ID token and access token using a pipe (|) as the delimiter
-            const superToken = `${idToken}|${accessToken}`;
-            //console.log('Super Token:', superToken);
+        const superToken = await getSuperToken();
+        if (superToken) {
 
             // Attach the combined token to the Authorization header
             config.headers['Authorization'] = `Bearer ${superToken}`;
@@ -35,12 +31,13 @@ axiosInstance.interceptors.request.use(
 );
 
 // Function to handle reduce API request
-export const fetchReducedLogs = async (service_name, timeRange, reductionRate) => {
+export const fetchReducedLogs = async (service_name, timeRange, reductionRate, errorLogsOnly) => {
     const reqBody = {
         service_name: service_name,
         start_time: dayjs(timeRange[0]).format('DD-MM-YYYY HH:mm:ss'),
         end_time: dayjs(timeRange[1]).format('DD-MM-YYYY HH:mm:ss'),
         reduction_rate: reductionRate,
+        error_logs_only: errorLogsOnly,
     };
 
     //console.log('Request Body:', reqBody);

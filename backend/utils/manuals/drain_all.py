@@ -73,5 +73,5 @@ def reduce_from_file(input_file, output_file):
 
 if __name__ == "__main__":
     print("Reducing logs...")
-    reduce_from_file('raw_interocitor_2-2:01_200k.txt', 'drained.log')
+    reduce_from_file('raw_dash-cart_10-10:10_900k.txt', 'drained.log')
     print("Logs reduced successfully.")

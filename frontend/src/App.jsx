@@ -1,7 +1,7 @@
 // App.jsx
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Avatar, Modal, Button, Breadcrumb } from 'antd';
-import { UserOutlined  } from '@ant-design/icons';
+import { Layout, Typography, Avatar, Modal, Button, Drawer, FloatButton } from 'antd';
+import { UserOutlined, QuestionCircleOutlined  } from '@ant-design/icons';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Tag } from "antd";
 
@@ -20,6 +20,7 @@ import Callback from './components/Callback.jsx'; // The Callback Page component
 import AnalysisHistory from './pages/AnalysisHistory.jsx';
 import AboutWiki from './pages/AboutWiki.jsx';
 import ComparitiveDashboard from './pages/ComparitiveDashboard.jsx';
+import APITokenPage from './pages/APITokenPage.jsx';
 
 import myLogo from './assets/logo.png';
 import MyLogoName from './assets/logo-name.png';
@@ -35,6 +36,8 @@ import './App.css';
 const App = () => {
   const [collapsed, setCollapsed] = useState(true);
   const [user, setUser] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
 
   useEffect(() => {
     handleAuthenticated()
@@ -74,6 +77,26 @@ const App = () => {
 
   return (
     <Router>
+
+      <FloatButton
+        icon={<QuestionCircleOutlined />}
+        type="default"
+        onClick={() => setDrawerOpen(true)}
+        style={{
+          insetInlineEnd: 68,
+        }}
+      />
+
+      <Drawer
+       title="Help" 
+       onClose={() => setDrawerOpen(false)} 
+       open={drawerOpen}
+       width={1000}
+       >
+        <AboutWiki />
+      </Drawer>
+
+
       <Layout style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
 
         <Sider
@@ -135,7 +158,7 @@ const App = () => {
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />
               <Route path="/compare" element={<PrivateRoute element={ComparitiveDashboard} />} />
               <Route path="/history" element={<PrivateRoute element={AnalysisHistory} />} />
-              <Route path="/settings" element={<PrivateRoute element={UnderConstruction} />} />
+              <Route path="/api-token" element={<PrivateRoute element={APITokenPage} />} />
               <Route path="/about" element={<PrivateRoute element={AboutWiki} />} />
 
               <Route path='/loading' element={<LoadingScreen />} />
