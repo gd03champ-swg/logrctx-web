@@ -240,6 +240,24 @@ const Dashboard = () => {
       JSON.stringify(log.replace(/^\[\d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2}\] /, ''), null, 2)
     )
 
+    const totalLogsCount = myLogs.length + myLogs2.length;
+
+    // ask for confimation if logs are more than 500
+    if (totalLogsCount > 500) {
+      Modal.confirm({
+        title: 'Logs are more than 500',
+        content: 'This might take a while to embed the logs. You can cancel and apply search filters to reduce the number of logs or continue with summarization.',
+        onOk() {
+          // continue with summarization
+        },
+        onCancel() {
+          setSummarizerLoading(false); // Add this line to stop the loading state
+          carouselRef.current.goTo(0); // Move carousel back to logs
+          return;
+        },
+      });
+    }
+
     // 0.5 seconds per 2 log line
     const estimatedTime = ((Math.ceil(myLogs.length / 2) * 0.5) + (Math.ceil(myLogs2.length / 2) * 0.5) / 60);
     openNotification('info', 'Summarizing Logs', 'Estimated wait time is ' + estimatedTime + ' minutes', <Spin />);
@@ -247,7 +265,7 @@ const Dashboard = () => {
     // Call the summarizer function and pass necessary parameters
     try{
       console.log('User Prompt:', userPrompt);
-      console.log('Lenght of filtered logs:', myLogs.length);
+      console.log('Lenght of total filtered logs:', totalLogsCount);
       let data;
       if (dualServiceCompare) {
         console.log('Lenght of filtered logs2:', myLogs2.length);
