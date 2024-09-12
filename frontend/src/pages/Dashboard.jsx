@@ -1,24 +1,30 @@
 // LogReducer.jsx
 import React,{ useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import debounce from 'lodash.debounce';
-import { Form, Button, DatePicker, Select, Space, Card, notification, Spin, Modal, Breadcrumb } from 'antd';
-import { Input, Collapse, InputNumber, Radio, Typography, Carousel, Skeleton, Divider } from 'antd';
+import { Form, Button, DatePicker, Select, Space, Card, notification, Spin, Modal, Popover, FloatButton } from 'antd';
+import { Input, Collapse, InputNumber, Radio, Typography, Carousel, Skeleton, Divider, Slider, Drawer } from 'antd';
 const { Text, Link, Paragraph } = Typography;
-import { DoubleRightOutlined, DoubleLeftOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
-import { AlignCenterOutlined, AliwangwangOutlined, DownloadOutlined, InfoCircleOutlined, SearchOutlined} from '@ant-design/icons';
-import Markdown from 'react-markdown'
+import { DoubleRightOutlined, DoubleLeftOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { AlignCenterOutlined, AliwangwangOutlined, DownloadOutlined, InfoCircleOutlined, SearchOutlined, QuestionCircleOutlined} from '@ant-design/icons';
 
 import dayjs from 'dayjs';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { service_pod_mapping, all_pods, all_services } from '../data/data.js';
-import { fetchReducedLogs, fetchRAGSummary } from '../handlers/apiHandlers.js';
+import { fetchReducedLogs, fetchRAGSummary, fetchComparitiveRAGSummary } from '../handlers/apiHandlers.js';
 
-import { ReduceProgress, SummarizeProgress } from '../components/Progress.jsx';
+import { ReduceProgress } from '../components/Progress.jsx';
+
+import AnalysisHistory from './AnalysisHistory.jsx';
 
 import myLogo from '../assets/logo.png';
 import myLogoName from '../assets/logo-name.png';
+import AboutWiki from './AboutWiki.jsx';
+
+import LogsDisplaySection from '../components/LogsDisplaySection.jsx';
+import SummaryDisplaySection from '../components/SummaryDisplaySection.jsx';
+import InputSection from '../components/InputsSection.jsx';
 
 const { Option } = Select;
 
@@ -28,6 +34,7 @@ const Dashboard = () => {
   const [reductionRate, setReductionRate] = useState(15);
   
   const [logs, setLogs] = useState([]);
+  const [logs2, setLogs2] = useState([]);
   const [llmResponse, setLlmResponse] = useState("");
 
   const [userPrompt, setUserPrompt] = useState("Summarize and bring up any anomalies in the logs")
@@ -35,7 +42,9 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnly, setShowOnly] = useState('');
   const [rawLogsLen, setRawLogsLen] = useState(0);
+  const [rawLogs2Len, setRawLogs2Len] = useState(0);
   const [reducedLogsLen, setReducedLogsLen] = useState(0);
+  const [reducedLogs2Len, setReducedLogs2Len] = useState(0);
   const [wrapLines, setWrapLines] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -43,19 +52,23 @@ const Dashboard = () => {
   const [summarizerLoading, setSummarizerLoading] = useState(false);
   const [animateButton, setAnimateButton] = useState(false);
   const [summariesCountInLast5Mins, setSummariesCountInLast5Mins] = useState(0);
+  const [comparitiveSummariesCountInLast10Mins, setComparitiveSummariesCountInLast10Mins] = useState(0);
 
   const [services, setServices] = useState([]);
   const [timeRange, setTimeRange] = useState([dayjs().subtract(5, 'minutes'), dayjs()]); // Default to last 5 minutes
   const [selectedQuickRange, setSelectedQuickRange] = useState(5/60); // Track selected quick time range
   const [grafanaUrl, setGrafanaUrl] = useState(null);
+  const [grafanaUrl2, setGrafanaUrl2] = useState(null); // Though updated, not used for now
 
+  const [dualServiceCompare, setDualServiceCompare] = useState(false);
 
-  /// UseStates for steps illustration : wait -> process -> finish
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // UseStates for steps illustration : wait -> process -> finish
   const [fetch , setFetch] = useState('wait');
   const [reduce , setReduce] = useState('wait');
   const [format , setFormat] = useState('wait');
   const [display , setDisplay] = useState('wait');
-  ///
 
   const carouselRef = useRef();
   const [form] = Form.useForm();
@@ -63,6 +76,7 @@ const Dashboard = () => {
 
   // Global flag to ensure the banner is shown only once
   let bannerShown = localStorage.getItem('bannerShown') || false; // Check if the banner has been shown
+
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -107,8 +121,11 @@ const Dashboard = () => {
   useEffect(() => {
     const summaries = JSON.parse(localStorage.getItem('summaries')) || [];
     const last5Mins = dayjs().subtract(5, 'minutes');
+    const last10Mins= dayjs().subtract(10, 'minutes')
     const summariesInLast5MinsHere = summaries.filter((summary) => dayjs(summary.timestamp, 'DD-MM-YYYY HH:mm:ss').isAfter(last5Mins));
+    const comparitiveSummariesInLast10Mins = summaries.filter((summary) => dayjs(summary.timestamp, 'DD-MM-YYYY HH:mm:ss').isAfter(last10Mins) && summary.isDualService);
     setSummariesCountInLast5Mins(summariesInLast5MinsHere.length);
+    setComparitiveSummariesCountInLast10Mins(comparitiveSummariesInLast10Mins.length);
   }, [llmResponse]);
 
   const filteredLogs = useMemo(() => {
@@ -119,14 +136,14 @@ const Dashboard = () => {
       );
   }, [logs, showOnly, searchTerm]);  // Dependency array ensures recomputation only when needed
 
-  // time range selection helpers
-  const predefinedTimeRanges = [
-    { label: '5 mins', value: 5 / 60 },
-    { label: '10 mins', value: 10 / 60 },
-    { label: '15 mins', value: 15 / 60 },
-    { label: '30 mins', value: 30 / 60 },
-    { label: '1 hr', value: 1 },
-  ];
+  const filteredLogs2 = useMemo(() => {
+    return logs2
+      .filter(log => 
+        (log.toLowerCase().includes(showOnly)) &&
+        (!searchTerm || log.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+  }, [logs2, showOnly, searchTerm]);  // Dependency array ensures recomputation only when needed
+
 
   // Update parameters from url embed
   const updateParamsFromUrl = () => {
@@ -173,25 +190,29 @@ const Dashboard = () => {
   const startSummary = async () => {
     setSummarizerLoading(true);
 
+    // Check if logs are available
     if (logs.length === 0) {
-      openNotification('info', 'No logs to summarize', 'Please fetch logs first');
+      openNotification('warning', 'No logs to summarize', 'Please fetch logs to continue');
       setSummarizerLoading(false); // Add this line to stop the loading state
       carouselRef.current.goTo(0); // Move carousel back to logs
       return;
     }
 
+    // Check if user prompt is available
     if (!userPrompt) {
       openNotification('warning', 'No user prompt', 'Please enter a user prompt to summarize the logs');
       setSummarizerLoading(false); // Add this line to stop the loading state
       return;
     }
 
+    // Check if logs are available with filters
     if (filteredLogs.length === 0) {
-      openNotification('info', 'No logs to summarize', 'Please enter a valid search term');
+      openNotification('warning', 'No logs to summarize', 'Please enter a valid search term');
       setSummarizerLoading(false); // Add this line to stop the loading state
       return;
     }
 
+    // Check if logs are already summarized
     if (llmResponse !== "") {
       openNotification('info', 'Logs already summarized', 'Please fetch new logs to summarize');
       setSummarizerLoading(false); // Add this line to stop the loading state
@@ -206,25 +227,59 @@ const Dashboard = () => {
       return;
     }
 
+    // Block if reached user quota for comparitive summaries
+    //if (comparitiveSummariesCountInLast10Mins >= 3) {
+    //  openNotification('warning', 'Quota Exceeded', 'You have reached the maximum quota of 1 comparitive summaries in the last 10 minutes.');
+    //  openNotification('info', 'Quota Exceeded', 'Please avoid spamming AI and try again after some time.');
+    //  setSummarizerLoading(false); // Add this line to stop the loading state
+    //  return;
+    //}
+
+    // Check if dual service enabled and logs2 not found
+    if (dualServiceCompare && logs2.length === 0) {
+      openNotification('warning', 'No 2nd service logs found', 'Please disable dual service mode or fecth 2nd service logs to continue');
+      setSummarizerLoading(false); // Add this line to stop the loading state
+      carouselRef.current.goTo(0); // Move carousel back to logs
+      return;
+    }
+
     // Ask user to wait untill estimated time for summarization
     openNotification('info', 'Summarizing Logs', 'Please while we perform RAG with the logs...');
 
     // Move carousel to summary
     carouselRef.current.goTo(1);
 
+
     // Apply user selected filters
     const myLogs = filteredLogs.map((log) => 
           JSON.stringify(log.replace(/^\[\d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2}\] /, ''), null, 2)
         ) 
+
+    // Apply user selected filters for logs2 if available
+    const myLogs2 = filteredLogs2.map((log) =>
+      JSON.stringify(log.replace(/^\[\d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2}\] /, ''), null, 2)
+    )
+
     // 0.5 seconds per 2 log line
-    const estimatedTime = Math.ceil(myLogs.length / 2) * 0.5;
-    openNotification('info', 'Summarizing Logs', 'Estimated wait time is ' + estimatedTime + ' seconds');
+    const estimatedTime = ((Math.ceil(myLogs.length / 2) * 0.5) + (Math.ceil(myLogs2.length / 2) * 0.5) / 60);
+    openNotification('info', 'Summarizing Logs', 'Estimated wait time is ' + estimatedTime + ' minutes', <Spin />);
 
     // Call the summarizer function and pass necessary parameters
     try{
       console.log('User Prompt:', userPrompt);
       console.log('Lenght of filtered logs:', myLogs.length);
-      const data = await fetchRAGSummary(userPrompt, myLogs);
+      let data;
+      if (dualServiceCompare) {
+        console.log('Lenght of filtered logs2:', myLogs2.length);
+
+        data = await fetchComparitiveRAGSummary(
+                                  userPrompt, 
+                                  myLogs, 
+                                  myLogs2
+                                );
+      } else {
+        data = await fetchRAGSummary(userPrompt, myLogs);
+      }
       if (!data.response) {
         throw new Error(data.message);
       }
@@ -245,8 +300,9 @@ const Dashboard = () => {
     // Save summary along with request info to local storage array
     try{
       const summary = {
-        pod: form.getFieldValue('pod_name'),
+        isDualService: dualServiceCompare,
         service: form.getFieldValue('service_name'),
+        service2: form.getFieldValue('service_2_name'),
         timeRange: timeRange.map((time) => dayjs(time).format('DD-MM-YYYY HH:mm:ss')),
         userPrompt: userPrompt,
         response: response,
@@ -273,16 +329,28 @@ const Dashboard = () => {
     }
   };
 
-  const openNotification = (type, message, description) => {
+  const openNotification = (type, message, description, icon) => {
     notification[type]({
       message: message,
       description: description,
+      icon: icon,
       placement: 'topRight',
     });
   };
 
   const onFinish = async (values) => {
+
+    // flash a loading notification from antd
+    openNotification(
+              'info', 
+              'Fetching Logs',
+              'Please wait while we fetch the logs...',
+              <Spin />
+            );
+
     setLoading(true);
+    setLogs([]);  // Reset logs
+    setLogs2([]);  // Reset logs2
 
     // Move carousel to summary
     carouselRef.current.goTo(0);
@@ -313,7 +381,7 @@ const Dashboard = () => {
 
     try {
       // Call the fetchReducedLogs function and pass necessary parameters
-      const data = await fetchReducedLogs(values, timeRange, reductionRate);
+      const data = await fetchReducedLogs(values.service_name, timeRange, reductionRate);
   
       console.log('Response:', data.message);
 
@@ -343,7 +411,7 @@ const Dashboard = () => {
   
       // Inform users if raw logs are capped at 5000
       if (data.original_len === 10000) {
-        openNotification('warning', 'Logs Capped', 'The raw logs have been capped at 10000 from start time.');
+        openNotification('warning', 'Logs Capped', 'The raw logs have been capped at 10,000 from start time.');
       }
 
       openNotification('success', 'Achieved ' + Math.round(((data.reduced_len / data.original_len) * 100 + Number.EPSILON) * 100) / 100 + ' reduction rate.', 'We\'ve brought ' + data.original_len + ' lines down to ' + data.reduced_len + ' .');
@@ -400,10 +468,149 @@ const Dashboard = () => {
 
       } finally {
         setLoading(false);
+
+        if(values.service_2_name) {
+          onFinish2(values);
+        }
+
+      }
+  };
+
+  // this will run only when 2 services are selected
+  const onFinish2 = async (values) => {
+
+    // flash a loading notification from antd
+    openNotification(
+              'info', 
+              'Fetching 2nd Service Logs',
+              'Please wait while we fetch the logs...',
+              <Spin />
+            );
+
+    setLoading(true);
+
+    // Move carousel to summary
+    carouselRef.current.goTo(0);
+
+    // Reset the LLM response
+    setLlmResponse("");
+    
+    /// Steps update
+    setFetch('process');
+    setReduce('wait');
+    setFormat('wait');
+    setDisplay('wait');
+    ///
+
+    // Steps update -> wait for random 3-6 seconds and update the steps if loading is still true
+    setTimeout(() => {
+      setLoading((loadingState) => {
+        if (loadingState) {
+          setFetch('finish');
+          setReduce('process');
+          setFormat('wait');
+          setDisplay('wait');
+        }
+        return loadingState; // Ensure loading state is returned as is
+      });
+    }, Math.floor(Math.random() * (4000 - 1500) + 1500));
+    ///
+
+    try {
+      // Call the fetchReducedLogs function and pass necessary parameters
+      const data = await fetchReducedLogs(values.service_2_name, timeRange, reductionRate);
+  
+      console.log('Response:', data.message);
+
+      if (!data.reduced_logs) {
+        openNotification('warning', 'An error occured at backend!', data.message);
+        setLoading(false);
+
+        /// Steps update
+        setFetch('wait');
+        setReduce('wait');
+        setFormat('wait');
+        setDisplay('wait');
+
+        return;
+      }
+  
+      // Remove double quotes from the logs
+      const myReducedLogs = [];
+      data.reduced_logs.forEach((log) => {
+        const logObj = log.replace(/["']/g, '');
+        myReducedLogs.push(logObj);
+      });
+  
+      setLogs2(myReducedLogs);
+      // Have to set the rawLogsLen and reducedLogsLen for the 2nd service
+      setRawLogs2Len(data.original_len);
+      setReducedLogs2Len(data.reduced_len);
+  
+      // Inform users if raw logs are capped at 5000
+      if (data.original_len === 10000) {
+        openNotification('warning', 'Logs Capped', 'The raw logs have been capped at 10,000 from start time.');
+      }
+
+      openNotification('success', 'Achieved ' + Math.round(((data.reduced_len / data.original_len) * 100 + Number.EPSILON) * 100) / 100 + ' reduction rate.', 'We\'ve brought ' + data.original_len + ' lines down to ' + data.reduced_len + ' .');
+
+      //Construct Grafana URL
+      const constructedGrafanaUrl = constructGrafanaUrl(
+        values.service_2_name
+      );
+      setGrafanaUrl2(constructedGrafanaUrl);  // Set the Grafana URL in state
+
+      /// Steps update
+      setFetch('finish');
+      setReduce('finish');
+      setFormat('finish');
+      setDisplay('finish');
+      ///
+
+      // Scroll to logs
+      scrollToBottom();
+
+      // Glow AI button for 5 seconds
+      setTimeout(() => {
+        setAnimateButton(true);
+        // Reset the animation after 3 seconds
+        setTimeout(() => setAnimateButton(false), 10000);
+      }
+      , 1500);
+
+    } catch (error) {
+
+        console.log(error)
+
+        // Custom error for network error
+        if (error.message === 'Network Error') {
+          openNotification('error', 'Network Error', 'Couldn\'t connect to the backend. Please check your internet connection.');
+          return;
+        }
+
+        // Custom error for 403
+        if ( error.response && error.response.status === 403) {
+          openNotification('error', 'Unauthorized', 'You are not authorized to access this resource.');
+          return;
+        }
+
+        console.log('Failed to fetch logs:', error);
+        openNotification('error', 'Error Fetching Logs', error.message || 'An error occurred while fetching logs.');
+
+        /// Steps update
+        setFetch('wait');
+        setReduce('wait');
+        setFormat('wait');
+        setDisplay('wait');
+        ///
+
+      } finally {
+        setLoading(false);
       }
 
   };
 
+  // Grafana URL for View Raw Logs functionality
   const constructGrafanaUrl = (service) => {
     const from = dayjs(timeRange[0]).valueOf(); // Milliseconds since epoch
     const to = dayjs(timeRange[1]).valueOf();
@@ -448,136 +655,59 @@ const Dashboard = () => {
     scrollToBottom();
     openNotification('info', 'Full Screen Mode', 'You have toggled full screen mode');
   };
+
+  const toggleDualServiceCompare = () => {
+
+    setDualServiceCompare(!dualServiceCompare);
+    form.setFieldsValue({ service_2_name: '' });
+    setLogs2([]);  // Reset logs2
+
+    if (!dualServiceCompare) {
+      setUserPrompt("Summarize and bring up any anomalies by comparing given 2 service logs")
+      openNotification('info', 'Dual Service Compare', <p>You have <b>enabled</b> dual service compare mode</p>);
+    } else {
+      setUserPrompt("Summarize and bring up any anomalies in the logs")
+      openNotification('info', 'Dual Service Compare', <p>You have <b>disabled</b> dual service compare mode</p>);
+    }
+  };
   
   return (
     <div>
 
+    <FloatButton
+      icon={<QuestionCircleOutlined />}
+      type="default"
+      onClick={() => setDrawerOpen(true)}
+      style={{
+        insetInlineEnd: 68,
+      }}
+    />
+
+      <Drawer
+       title="Help" 
+       onClose={() => setDrawerOpen(false)} 
+       open={drawerOpen}
+       width={1000}
+       >
+        <AboutWiki />
+      </Drawer>
+
       {/* Progress bar */}
       <ReduceProgress fetch={fetch} reduce={reduce} format={format} display={display} />
 
-      <Card
-        title="Log Reducer"
-        style={{
-          marginTop: '20px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-          width: '100%', 
-        }}
-        bordered={true}
-      >
-      <Form
+      {/* Dashboard input card */}
+     
+      <InputSection
         form={form}
-        layout="vertical"
         onFinish={onFinish}
-        initialValues={{
-          pod_name: '',
-          service_name: '',
-          reduction_rate: 15,
-        }}
-        style={{ maxWidth: '800px', margin: 'auto' }}
-      >
-        {/* Selector space */}
-        <Space size="middle" style={{ display: 'flex' }}>
-
-          {/*Service name select*/}
-          <Form.Item
-            label="Service Name"
-            name="service_name"
-            rules={[{ required: true, message: 'Please select the Service Name!' }]}
-            style={{ flex: 1, minWidth: '200px'}}
-          >
-            <Select 
-              placeholder="Select Service" 
-              className="custom-select"
-              showSearch  // Add showSearch prop to enable search functionality
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }  // Add filterOption prop to customize search behavior
-            >
-              {services.map((service) => (
-                <Option key={service} value={service}>
-                  {service}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Add Predefined Time Range Buttons */}
-          <Form.Item label="Quick Time Range Selection">
-            <Button.Group>
-            {predefinedTimeRanges.map(({ label, value }) => (
-                <Button
-                  className='zoom'
-                  key={value}
-                  type={selectedQuickRange === value ? 'primary' : 'default'} // Highlight selected button
-                  onClick={() => handlePredefinedTimeRange(value)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </Button.Group>
-          </Form.Item>
-
-
-        </Space>
-
-        {/* More Options Collapse */} {/* defaultActiveKey={1} */}
-        <Collapse style={{ marginTop: '20px', marginBottom: '25px' }} > 
-            <Collapse.Panel header="More Options" key="1">
-
-              {/* Reduction Rate Input */}
-              <Form.Item
-                label="Reduction Rate (%)"
-                name="reduction_rate"
-                rules={[{ required: true, type: 'number', min: 5, max: 95, message: 'Please enter a valid reduction rate between 5 and 95!' }]}
-              >
-                <InputNumber
-                  min={0}
-                  max={100}
-                  placeholder="reduction rate"
-                  style={{ width: '100%' }}
-                  value={reductionRate}
-                  onChange={(value) => setReductionRate(value)}
-                />
-              </Form.Item>
-
-              {/*Time Range select*/}
-              <Form.Item
-                label="Time Range"
-                name="time_range"
-                rules={[{ required: true, message: 'Please select the time range!' }]}
-                >
-                <DatePicker.RangePicker
-                  showTime
-                  format="DD-MM HH:mm"
-                  style={{ width: '100%' }}
-                  className="custom-date-picker"
-                  value={timeRange}  // Bind to state
-                  onChange={handleTimeRangeChange}  // Handle manual change
-                  />
-              </Form.Item>
-
-            </Collapse.Panel>
-          </Collapse>
-
-        <Space size="middle" style={{ display: 'flex' }}>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              icon={<AlignCenterOutlined />}
-              loading={loading}
-              block
-              className="fetch-logs-btn"
-            >
-              {loading ? <Spin /> : 'Reduce Logs'}
-            </Button>
-          </Form.Item>
-
-        </Space>
-      </Form>
-      </Card>
+        services={services}
+        timeRange={timeRange}
+        handlePredefinedTimeRange={handlePredefinedTimeRange}
+        handleTimeRangeChange={handleTimeRangeChange}
+        selectedQuickRange={selectedQuickRange}
+        dualServiceCompare={dualServiceCompare}
+        toggleDualServiceCompare={toggleDualServiceCompare}
+      />
 
       <Carousel 
         effect="scrollx"
@@ -596,257 +726,42 @@ const Dashboard = () => {
         draggable={true}
         infinite={false}
         >
+        
+        {/* Reduced logs display card */}
+        <LogsDisplaySection 
+                  form={form}
+                  rawLogsLen={rawLogsLen}
+                  reducedLogsLen={reducedLogsLen}
+                  filteredLogs={filteredLogs}
+                  showOnly={showOnly}
+                  setShowOnly={setShowOnly}
+                  wrapLines={wrapLines}
+                  setWrapLines={setWrapLines}
+                  isFullScreen={isFullScreen}
+                  toggleFullScreen={toggleFullScreen}
+                  handleSearch={handleSearch}
+                  handleDownload={handleDownload}
+                  animateButton={animateButton}
+                  carouselRef={carouselRef}
+                  logs2={logs2}
+                  rawLogs2Len={rawLogs2Len}
+                  reducedLogs2Len={reducedLogs2Len}
+                  filteredLogs2={filteredLogs2}
+                  dualServiceCompare={dualServiceCompare}
+                  grafanaUrl={grafanaUrl}
+                  grafanaUrl2={grafanaUrl2}
+                  />
 
-        <Card
-          title="Result"
-          bordered={true}
-          // Style to make this card become full screen
-          style={{
-            position: 'relative',
-            width: '100%',
-            borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-          }}
-          actions={[
-            <span  key="original">Original Logs: {rawLogsLen}</span>,
-            <span key="reduced">Reduced Logs: {reducedLogsLen}</span>,
-            <span key="reduced">Reduction Rate: { Math.round((((reducedLogsLen / rawLogsLen) * 100) + Number.EPSILON) * 100) / 100 } %</span>,
-            <a className='zoom' href={grafanaUrl} target="_blank" rel="noopener noreferrer">
-              <span key="grafana">View Raw Logs</span>
-            </a>
-          ]}
-        >
-          <Form.Item 
-            style={{ position: 'absolute', top: '10px', right: '100px' }}
-            >
-            <Input 
-              prefix={<SearchOutlined />}
-              placeholder="Search logs..." 
-              onChange={(e) => handleSearch(e.target.value)} 
-            />
-          </Form.Item>
-
-          <Button
-              type="primary"
-              onClick={toggleFullScreen}
-              icon={isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-              style={{ position: 'absolute', top: '10px', right: '50px' }}
-              className={'zoom'}
-            />
-
-          <Button
-            className='zoom'
-            type="primary"
-            icon={<DownloadOutlined />}
-            style={{ position: 'absolute', top: '10px', right: '10px' }}
-            onClick={handleDownload}
-          />
-
-          <Space 
-            size="middle" 
-            style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}
-          >
-            <Space size="middle" style={{ flexGrow: 1 }}>
-
-              {/* Log type filter */}
-              <Radio.Group value={showOnly} onChange={(e) => setShowOnly(e.target.value)}>
-                <Radio.Button
-                  className='zoom'
-                  value="" 
-                  style={{ 
-                    backgroundColor: showOnly === '' ? '#1890ff' : '', 
-                    color: showOnly === '' ? '#fff' : '' 
-                  }}
-                >
-                  all
-                </Radio.Button>
-                <Radio.Button 
-                  value="info" 
-                  className='zoom'
-                  style={{ 
-                    backgroundColor: showOnly === 'info' ? '#1890ff' : '', 
-                    color: showOnly === 'info' ? '#fff' : '' 
-                  }}
-                >
-                  info
-                </Radio.Button>
-                <Radio.Button 
-                  value="warn" 
-                  className='zoom'
-                  style={{ 
-                    backgroundColor: showOnly === 'warn' ? '#faad14' : '', 
-                    color: showOnly === 'warn' ? '#fff' : '' 
-                  }}
-                >
-                  warn
-                </Radio.Button>
-                <Radio.Button 
-                  value="error" 
-                  className='zoom'
-                  style={{ 
-                    backgroundColor: showOnly === 'error' ? '#ff4d4f' : '', 
-                    color: showOnly === 'error' ? '#fff' : '' 
-                  }}
-                >
-                  error
-                </Radio.Button>
-              </Radio.Group>
-
-              {/* Wrap lines toggle */}
-              <Radio.Group>
-                <Radio.Button 
-                  value="" 
-                  className='zoom'
-                  style={{ 
-                    backgroundColor: wrapLines ? '#1890ff' : '', 
-                    color: wrapLines ? '#fff' : '' 
-                  }}
-                  onClick={() => setWrapLines(!wrapLines)}
-                >
-                  wrap
-                </Radio.Button>
-              </Radio.Group>
-            </Space>
-
-            <Button
-              type="secondary"
-              onClick={() => carouselRef.current.goTo(1)}
-              icon={<DoubleRightOutlined />}
-              className={`zoom ${animateButton ? 'glow-button' : ''}`}
-            >
-              Logrctx AI
-            </Button>
-          </Space>
-
-          <div
-            style={{
-              maxHeight: isFullScreen ? '1000px' : '550px', // Set a fixed height
-              minHeight: '200px', // Set a minimum height
-              overflowY: 'scroll', // Enable scrolling within the div
-              padding: '16px',
-              backgroundColor: '#282a36', // Background color to match SyntaxHighlighter
-              borderRadius: '8px',
-            }}
-          >
-            <SyntaxHighlighter 
-              language="json" 
-              style={dracula} 
-              showLineNumbers
-              wrapLines={wrapLines}
-              lineProps={{style: {whiteSpace: 'pre-wrap'}}}
-              codeTagProps={{style: {fontSize: '12px'}}}  // Adjust the font size here
-            >
-              {filteredLogs.length 
-                ? filteredLogs.map((log) => 
-                    JSON.stringify(
-                      log
-                        .replace(/^\[\d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2}\] /, '') // Remove timestamp
-                        .replace(/^"|"$/g, '')  // Remove leading and trailing double quotes
-                        .replace(/\n/g, '')     // Remove newline characters
-                        .replace(/\\/g, ''),    // Remove backslashes
-                      null,
-                      2
-                    )
-                  ).join('\n') 
-                : 'No logs found :)'
-              }
-            </SyntaxHighlighter>
-          </div>
-
-
-        </Card>
-
-        <Card
-          title="Logrctx AI"
-          bordered={true}
-          actions={[
-            <span key="original">Original Logs: {rawLogsLen}</span>,
-            <span key="reduced">Reduced Logs: {reducedLogsLen}</span>,
-            <span style={{color: summariesCountInLast5Mins>=5 ? 'red' : ''}} key="reduced">AI Quota: {summariesCountInLast5Mins}/5</span>,
-            <a className='zoom' href={grafanaUrl} target="_blank" rel="noopener noreferrer">
-              <span key="grafana">View Raw Logs</span>
-            </a>
-          ]}
-          className='glow'
-          style={{ position: 'relative' }}
-        >
-          {/* Back Button */}
-          <Button
-            className='zoom'
-            type="secondary"
-            icon={<DoubleLeftOutlined />}
-            style={{ position: 'absolute', top: '10px', right: '10px' }}
-            onClick={() => carouselRef.current.goTo(0)}
-          >
-            Back
-          </Button>
-
-          {/* Get user prompt input */}
-          <Form layout="inline">
-            <Form.Item 
-              label="Prompt: "
-              style={{ flex: 1, marginRight: '10px' }}>
-              <Paragraph
-                style={{ width: '100%', marginBottom: 0 }}
-                editable={{
-                  onChange: setUserPrompt,
-                }}
-              >
-                {userPrompt}
-              </Paragraph>
-            </Form.Item>
-
-            <Form.Item style={{ marginBottom: 0 }}>
-              <Button
-                type="primary"
-                onClick={startSummary}
-                icon={<AliwangwangOutlined />}
-                loading={summarizerLoading}
-                className="fetch-logs-btn"
-              >
-                Analyze
-              </Button>
-            </Form.Item>
-          </Form>
-
-
-          {/* Skeleton Loader for LLM Response */}
-          {summarizerLoading ? (
-            <Skeleton active paragraph={{ rows: 4 }} style={{marginTop: '15px'}} />
-          ) : llmResponse ?(
-            <Paragraph 
-              style={{ marginTop: '10px' }}
-              copyable={{
-                tooltips: ['click to copy', 'Response copied!!'],
-                text: async () =>
-                  new Promise((resolve) => {
-                    setTimeout( async () =>{
-                      await handleCopyClick(llmResponse)
-                      resolve(llmResponse);
-                    }, 500);
-                  }),
-              }}
-            >
-              {llmResponse.split('\n').map((line, index) => (
-                <React.Fragment key={index}>
-                    {line}
-                  <br />
-                </React.Fragment>
-              ))}
-            </Paragraph>
-          ) : (<p><br/>{"Nothing here yet :)"}</p>)
-          }
-
-          {/* Disclaimer about AI */}
-          <Divider>
-            <InfoCircleOutlined />
-          </Divider>
-          <Text type="secondary" style={{ display: 'block', marginTop: '20px', textAlign: 'center' }}>
-            AI generated information may contain errors. Please verify important info. <br/>
-            Any filter applied on reduced logs will reflect here too.
-          </Text>
-
-        </Card>
+        {/* AI summary display card */}
+        <SummaryDisplaySection 
+                  userPrompt={userPrompt}
+                  llmResponse={llmResponse}
+                  startSummary={startSummary}
+                  summarizerLoading={summarizerLoading}
+                  handleCopyClick={handleCopyClick}
+                  summariesCountInLast5Mins={summariesCountInLast5Mins}
+                  comparitiveSummariesCountInLast10Mins={comparitiveSummariesCountInLast10Mins}
+                  />
 
       </Carousel>
     </div>

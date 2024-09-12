@@ -19,6 +19,7 @@ import LoadingScreen from './components/LoadingScreen.jsx';
 import Callback from './components/Callback.jsx'; // The Callback Page component
 import AnalysisHistory from './pages/AnalysisHistory.jsx';
 import AboutWiki from './pages/AboutWiki.jsx';
+import ComparitiveDashboard from './pages/ComparitiveDashboard.jsx';
 
 import myLogo from './assets/logo.png';
 import MyLogoName from './assets/logo-name.png';
@@ -132,7 +133,8 @@ const App = () => {
 
               {/* Private routes */}
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />
-              <Route path="/summary-history" element={<PrivateRoute element={AnalysisHistory} />} />
+              <Route path="/compare" element={<PrivateRoute element={ComparitiveDashboard} />} />
+              <Route path="/history" element={<PrivateRoute element={AnalysisHistory} />} />
               <Route path="/settings" element={<PrivateRoute element={UnderConstruction} />} />
               <Route path="/about" element={<PrivateRoute element={AboutWiki} />} />
 

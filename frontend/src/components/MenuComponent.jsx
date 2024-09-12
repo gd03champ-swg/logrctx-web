@@ -3,7 +3,7 @@ import React from 'react';
 import { Menu, Typography } from 'antd';
 import { useLocation } from 'react-router-dom';
 import { DashboardOutlined, FileDoneOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { LogoutOutlined, UserAddOutlined, LoginOutlined } from '@ant-design/icons';
+import { LogoutOutlined, SwapOutlined, LoginOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 
@@ -22,8 +22,11 @@ const MenuComponent = ({ user, handleLogout, collapsed }) => {
           <Menu.Item className='zoom' key="/" icon={<DashboardOutlined />}>
             <Link to="/">Dashboard</Link>
           </Menu.Item>
-          <Menu.Item className='zoom' key="/summary-history" icon={<FileDoneOutlined />}>
-            <Link to="/summary-history">AI History</Link>
+          <Menu.Item className='zoom' key="/compare" icon={<SwapOutlined />}>
+            <Link to="/compare">Compare</Link>
+          </Menu.Item>
+          <Menu.Item className='zoom' key="/history" icon={<FileDoneOutlined />}>
+            <Link to="/history">AI History</Link>
           </Menu.Item>
           <Menu.Item className='zoom' key="/about" icon={<InfoCircleOutlined />}>
             <Link to="/about">About</Link>

@@ -44,7 +44,7 @@ def drain_logs(logs, drain_sim_th=0.6, target_reduction=0.15):
     else:
         return reduced_logs
 
-def reduce(raw_logs, reduction_ratio=15):
+def reduce(raw_logs, reduction_ratio=0.1):
     reduce_rate = reduction_ratio / 100
     reduced_logs = drain_logs(raw_logs, target_reduction=reduce_rate)
     return reduced_logs, len(raw_logs), len(reduced_logs)

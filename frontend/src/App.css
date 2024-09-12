@@ -61,7 +61,7 @@
 
 .glow-button {
   animation: glow 6s ease-in-out infinite, gradient 6s ease-in-out infinite;
-  background: linear-gradient(270deg, #ff4d4f, #1890ff, #52c41a, #ffa500);
+  background: linear-gradient(135deg, #6253e1, #04befe, #ff4d4f, #ffa500, #6253e1, #04befe, #ff4d4f, #ffa500);
   background-size: 400% 400%;
   border: none;
   color: white;

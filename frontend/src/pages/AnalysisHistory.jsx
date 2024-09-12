@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Input, Space, Typography, Popconfirm, notification, DatePicker, Divider } from 'antd';
-import { DeleteOutlined, EyeOutlined, SearchOutlined, FileDoneOutlined, DownloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Input, Space, Typography, Popconfirm, notification, DatePicker, Divider, Popover } from 'antd';
+import { DeleteOutlined, EyeOutlined, SearchOutlined, FileDoneOutlined, DownloadOutlined, InfoCircleOutlined, FilterOutlined, FilterFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 
@@ -11,12 +11,15 @@ const AnalysisHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSummary, setSelectedSummary] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [dualSummaryToggle, setDualSummaryToggle] = useState(false);
 
   useEffect(() => {
     const storedSummaries = JSON.parse(localStorage.getItem('summaries')) || [];
-    setSummaries(storedSummaries);
-    setFilteredSummaries(storedSummaries);
-  }, []);
+    // Display summary only having isDualService as true when toggled to dual summary view
+    const displaySummaries = storedSummaries.filter(summary => !(dualSummaryToggle ^ summary.isDualService));
+    setSummaries(displaySummaries);
+    setFilteredSummaries(displaySummaries);
+  }, [dualSummaryToggle]);
 
   const openNotification = (type, message, description) => {
     notification[type]({
@@ -84,7 +87,7 @@ const AnalysisHistory = () => {
     }
   };
 
-  const columns = [
+  const columnsSingle = [
     {
       title: 'Timestamp',
       dataIndex: 'timestamp',
@@ -93,12 +96,63 @@ const AnalysisHistory = () => {
       sortDirections: ['descend', 'ascend'],
     },
     {
-      title: 'Pod',
-      dataIndex: 'pod',
-      key: 'pod',
+      title: 'Service',
+      dataIndex: 'service',
+      key: 'service',
     },
     {
-      title: 'Service',
+      title: 'Time Range',
+      dataIndex: 'timeRange',
+      key: 'timeRange',
+      render: (timeRange) => timeRange.join(' - '),
+    },
+    {
+      title: 'User Prompt',
+      dataIndex: 'userPrompt',
+      key: 'userPrompt',
+      ellipsis: true,
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => handleViewSummary(record)}
+          >
+            View
+          </Button>
+          <Popconfirm
+            title="Are you sure to delete this summary?"
+            onConfirm={() => handleDeleteSummary(record.timestamp)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button icon={<DeleteOutlined />} danger>
+              Delete
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  const columnsDouble = [
+    {
+      title: 'Timestamp',
+      dataIndex: 'timestamp',
+      key: 'timestamp',
+      sorter: (a, b) => dayjs(a.timestamp, 'DD-MM-YYYY HH:mm:ss').unix() - dayjs(b.timestamp, 'DD-MM-YYYY HH:mm:ss').unix(),
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: 'Service 1',
+      dataIndex: 'service',
+      key: 'service',
+    },
+    {
+      title: 'Service 2',
       dataIndex: 'service',
       key: 'service',
     },
@@ -148,13 +202,18 @@ const AnalysisHistory = () => {
       </Typography.Title>
 
       <Space style={{ marginBottom: '16px', width: '100%', justifyContent: 'space-between' }}>
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search summaries"
-          value={searchTerm}
-          onChange={handleSearch}
-          style={{ width: '300px' }}
-        />
+        <Space>
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search summaries"
+            value={searchTerm}
+            onChange={handleSearch}
+            style={{ width: '300px' }}
+          />
+          <Popover content="Toggle between single and dual summary view" title="Summary View" trigger="hover">
+            <Button icon={ dualSummaryToggle ? <FilterFilled /> : <FilterOutlined />} onClick={() => setDualSummaryToggle(!dualSummaryToggle)} />
+          </Popover>
+        </Space>
         <Space>
           <Button icon={<DownloadOutlined />} onClick={handleExportToExcel}>
             Export to Excel
@@ -174,7 +233,7 @@ const AnalysisHistory = () => {
 
       <Table
         dataSource={filteredSummaries}
-        columns={columns}
+        columns={ dualSummaryToggle ? columnsDouble : columnsSingle}
         rowKey="timestamp"
         pagination={{ pageSize: 7 }}
       />
@@ -188,22 +247,25 @@ const AnalysisHistory = () => {
       >
         <Typography.Title level={4}>{selectedSummary?.userPrompt}</Typography.Title>
         <Space size="middle" style={{ marginBottom: '16px' }}>
+          <div>
+              <Typography.Text strong>Service:</Typography.Text>
+              <Input
+              value={selectedSummary?.service}
+              disabled
+              style={{ width: '150px', marginLeft: '8px' }}
+              />
+          </div>
+
+          {dualSummaryToggle && (
             <div>
-                <Typography.Text strong>Pod:</Typography.Text>
-                <Input
-                value={selectedSummary?.pod}
-                disabled
-                style={{ width: '150px', marginLeft: '8px' }}
-                />
+              <Typography.Text strong>Service 2:</Typography.Text>
+              <Input
+              value={selectedSummary?.service2}
+              disabled
+              style={{ width: '150px', marginLeft: '8px' }}
+              />
             </div>
-            <div>
-                <Typography.Text strong>Service:</Typography.Text>
-                <Input
-                value={selectedSummary?.service}
-                disabled
-                style={{ width: '150px', marginLeft: '8px' }}
-                />
-            </div>
+          )}
             </Space>
         <DatePicker.RangePicker
             value={[

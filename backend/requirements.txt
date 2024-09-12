@@ -35,6 +35,7 @@ pyparsing==3.1.4
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-jose==3.3.0
+pytz==2024.1
 regex==2024.7.24
 requests==2.32.3
 rfc3339==6.2

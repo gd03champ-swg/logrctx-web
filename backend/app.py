@@ -1,8 +1,9 @@
 from utils.loki_client import get_logs
 from utils.drainer import reduce
 from utils.auth import get_current_user
-from fastapi import FastAPI, Request, Depends
 from utils.rag import generate_rag_response
+from utils.rag import generate_comparative_rag_response
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from datetime import datetime, timezone, timedelta
@@ -88,6 +89,28 @@ async def generate_rag(request: Request, user: dict = Depends(get_current_user))
         query = params.get("query")
 
         response = generate_rag_response(logs, query, user.get("email"))
+
+        return {"response": response}
+    
+    except Exception as e:
+
+        print(e)
+        return {"message": str(e)}
+    
+@app.post("/rag-comparitive")
+async def generate_comparative_rag(request: Request, user: dict = Depends(get_current_user)):
+
+    try:
+        params = await request.json()
+
+        # Logging the requests
+        print("user: ", user.get("email"), " @ ", datetime.now(), "requested comparative rag analysis")
+
+        logs_1 = params.get("logs_1")
+        logs_2 = params.get("logs_2")
+        query = params.get("query")
+
+        response = generate_comparative_rag_response(logs_1, logs_2, query, user.get("email"))
 
         return {"response": response}
     

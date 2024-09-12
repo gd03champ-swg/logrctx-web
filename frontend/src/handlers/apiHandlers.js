@@ -35,9 +35,9 @@ axiosInstance.interceptors.request.use(
 );
 
 // Function to handle reduce API request
-export const fetchReducedLogs = async (values, timeRange, reductionRate) => {
+export const fetchReducedLogs = async (service_name, timeRange, reductionRate) => {
     const reqBody = {
-        service_name: values.service_name,
+        service_name: service_name,
         start_time: dayjs(timeRange[0]).format('DD-MM-YYYY HH:mm:ss'),
         end_time: dayjs(timeRange[1]).format('DD-MM-YYYY HH:mm:ss'),
         reduction_rate: reductionRate,
@@ -68,3 +68,19 @@ export const fetchRAGSummary = async (query, logs) => {
         throw error;
     }
 };
+
+// Function to handle Comparitive RAG API request
+export const fetchComparitiveRAGSummary = async (query, logs_1, logs_2) => {
+    try {
+        const reqBody = {
+            query,
+            logs_1,
+            logs_2,
+        };
+        const response = await axiosInstance.post('/rag-comparitive', reqBody);
+        return response.data;
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
+}
