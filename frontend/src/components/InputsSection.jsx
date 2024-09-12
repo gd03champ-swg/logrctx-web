@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Form, Select, Button, Slider, DatePicker, Collapse, Space, Spin, Tooltip } from 'antd';
 import { AlignCenterOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { service_pod_mapping, all_pods, all_services } from '../data/data.js';
 
 const InputSection = ({
     form,
-    services,
     dualServiceCompare,
     toggleDualServiceCompare,
     selectedQuickRange,
@@ -18,6 +18,20 @@ const InputSection = ({
     errorLogsOnly,
     setErrorLogsOnly,
 }) => {
+
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+        try {
+          //setPods(all_pods);
+          setServices(all_services);
+        } catch (error) {
+          console.error('Failed to fetch metadata:', error);
+        }
+      };
+      fetchMetadata();
+    }, []);
 
       // time range selection helpers
   const predefinedTimeRanges = [

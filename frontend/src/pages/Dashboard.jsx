@@ -7,7 +7,6 @@ const { Text, Link } = Typography;
 
 import dayjs from 'dayjs';
 
-import { service_pod_mapping, all_pods, all_services } from '../data/data.js';
 import { fetchReducedLogs, fetchRAGSummary, fetchComparitiveRAGSummary } from '../handlers/apiHandlers.js';
 
 import { ReduceProgress } from '../components/Progress.jsx';
@@ -24,7 +23,6 @@ import { isError } from 'lodash';
 const Dashboard = () => {
   
   const [reductionRate, setReductionRate] = useState(15);
-  const [services, setServices] = useState([]);
   const [timeRange, setTimeRange] = useState([dayjs().subtract(5, 'minutes'), dayjs()]); // Default to last 5 minutes
   const [selectedQuickRange, setSelectedQuickRange] = useState(5/60); // Track selected quick time range
   const [userPrompt, setUserPrompt] = useState("Summarize and bring up any anomalies in the logs")
@@ -70,15 +68,6 @@ const Dashboard = () => {
 
 
   useEffect(() => {
-    const fetchMetadata = async () => {
-      try {
-        //setPods(all_pods);
-        setServices(all_services);
-      } catch (error) {
-        console.error('Failed to fetch metadata:', error);
-      }
-    };
-    fetchMetadata();
 
     updateParamsFromUrl();
   
@@ -673,7 +662,6 @@ const Dashboard = () => {
       <InputSection
         form={form}
         onFinish={onFinish}
-        services={services}
         timeRange={timeRange}
         handlePredefinedTimeRange={handlePredefinedTimeRange}
         handleTimeRangeChange={handleTimeRangeChange}
