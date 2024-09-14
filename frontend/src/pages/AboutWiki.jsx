@@ -41,6 +41,9 @@ const AboutWiki = () => {
                 <Paragraph>
                   <h4>Welcome to <strong>Logrctx</strong> – Context-aware Log Reduce and Analysis.</h4> This tool helps you manage and analyze large log datasets efficiently. By leveraging intelligent log draining, powerful AI-driven analysis, and contextual understanding, Logrctx offers a comprehensive solution for log management.
                 </Paragraph>
+                <Button icon={<InfoCircleOutlined />} type="link" href="https://swiggy.atlassian.net/wiki/x/pwCsAQE" target="_blank" rel="noopener noreferrer">
+                  Know more
+                </Button>
               </div>
 
               <Divider />
@@ -187,7 +190,7 @@ const AboutWiki = () => {
   "service_name": "service_1",
   "start_time": "01-09-2024 00:00:00",
   "end_time": "01-09-2024 12:00:00",
-  "reduction_rate": 15 ,
+  "reduction_rate":15 ,
 }`}
                         </pre>
                       }

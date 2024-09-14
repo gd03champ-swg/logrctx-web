@@ -86,7 +86,7 @@ const Dashboard = () => {
                 Please read the <Link href='/about'>about page</Link> for more information on how to use the tool.
               </Text>
               <Text>
-                Reach out to <Link href='https://swiggy.enterprise.slack.com/archives/C6P2C6938'>#devops-help</Link> for any feedback or feature requests.
+                Reach out to <Link href='https://swiggy.enterprise.slack.com/archives/D071E3Q7U3G'>@Ganish Deepak</Link> / <Link href='https://swiggy.enterprise.slack.com/archives/C6P2C6938'>#devops-help</Link> for any feedback or feature requests.
               </Text>
             </Space>
           </div>

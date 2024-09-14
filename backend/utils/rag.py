@@ -140,7 +140,7 @@ def embed_text(text, input_type, truncate, bedrock=bedrock_mumbai):
 
 def perform_similarity_search(embedded_logs, embedded_query, original_logs):
     similarities = cosine_similarity([embedded_query], embedded_logs)
-    best_indices = np.argsort(similarities[0])[-8:]  # Get top 10 relevant lines
+    best_indices = np.argsort(similarities[0])[-7:]  # Get top 10 relevant lines
     return "\n".join([original_logs[i][:2000] for i in best_indices]) # Truncate to 2000 characters in case of long logs
 
 # Function to truncate a string in the middle
