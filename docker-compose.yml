@@ -7,11 +7,16 @@ services:
     image: gd03/logrctx-web:backend
     container_name: backend
     environment:
-      - LOKI_URL=http://host.docker.internal:3100
+      # Define environment variables without spaces around the "="
+      - LOKI_URL=http://loki-query-frontend.logman:3100
       - COGNITO_REGION=ap-southeast-1
-      - COGNITO_USERPOOL_ID = ap-southeast-1_crJBQ7yo6
-      - COGNITO_APP_CLIENT_ID = 4kqil27q4dcielr3vbdqqemkm5
-      - LLM_MODEL_ID = mistral.mistral-7b-instruct-v0:2
+      - COGNITO_USERPOOL_ID=ap-southeast-1_crJBQ7yo6
+      - COGNITO_APP_CLIENT_ID=4kqil27q4dcielr3vbdqqemkm5
+
+      # LLM and Embedding Model IDs 
+      - MISTRAL_7B_MODEL_ID = mistral.mistral-7b-instruct-v0:2
+      - MISTRAL_7X8B_MODEL_ID = mistral.mixtral-8x7b-instruct-v0:1
+      - MISTRAL_LARGE_MODEL_ID = mistral.mistral-large-2407-v1:0
       - EMBEDDING_MODEL_ID = cohere.embed-english-v3
     ports:
       - "8080:8080"
