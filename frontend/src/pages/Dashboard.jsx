@@ -736,6 +736,7 @@ const Dashboard = () => {
         {/* AI summary display card */}
         <SummaryDisplaySection 
                   userPrompt={userPrompt}
+                  setUserPrompt={setUserPrompt}
                   llmResponse={llmResponse}
                   startSummary={startSummary}
                   summarizerLoading={summarizerLoading}
