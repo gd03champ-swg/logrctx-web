@@ -78,7 +78,7 @@ def get_logs(service_name, start_time_ns, end_time_ns, log_cap=10000):
     else:
         raise RuntimeError(f"{response.status_code} - {response.text}")
 
-def fetch_all_logs(service_name, start_time, end_time, log_cap=10000):
+def fetch_all_logs(service_name, start_time, end_time, file_name, log_cap=10000):
     all_logs = []
     current_start_time_ns = datetime_to_nanoseconds(start_time)
     end_time_ns = datetime_to_nanoseconds(end_time)
@@ -92,7 +92,7 @@ def fetch_all_logs(service_name, start_time, end_time, log_cap=10000):
             logs, latest_timestamp = get_logs(service_name, current_start_time_ns, end_time_ns, log_cap)
             
             # Update logs to file immediately
-            with open('all_logs.txt', 'a') as f:
+            with open(file_name, 'a') as f:
                 f.writelines(logs)
             
             all_logs.extend(logs)
@@ -112,10 +112,10 @@ def fetch_all_logs(service_name, start_time, end_time, log_cap=10000):
             print(f"Fetched {len(logs)} logs, total logs so far: {len(all_logs)}")
 
             # stop if fetched log lines are more than 100,000
-            #if len(all_logs) >= 300000:
-            #    print("Fetched more than 100,000 logs. Stopping.")
-            #    print(f"Actual time range of fetched logs: {start_time} to {nanoseconds_to_datetime(current_start_time_ns)}")
-            #    break
+            if len(all_logs) >= 1000000:
+                print("Fetched more than 10,00,000 logs. Stopping.")
+                print(f"Actual time range of fetched logs: {start_time} to {nanoseconds_to_datetime(current_start_time_ns)}")
+                break
 
             print(f"Next batch starts from {nanoseconds_to_datetime(current_start_time_ns)}")
 
@@ -136,13 +136,16 @@ url = os.getenv("LOKI_URL") + "/loki/api/v1/query_range"
 
 # Example usage
 if __name__ == "__main__":
-    service_name = "dash-cart"
-    start_time = datetime(2024, 9, 12, 10, 00, tzinfo=pytz.UTC)
-    end_time = datetime(2024, 9, 12, 10, 10, tzinfo=pytz.UTC)
+    service_name = "dash-business-metric-service"
+    start_time = datetime(2024, 9, 20, 12, 30, tzinfo=pytz.UTC)
+    end_time = datetime(2024, 9, 20, 12, 45, tzinfo=pytz.UTC)
+
+    fileName = f"logs/insight5_{service_name}/raw_{service_name}_{start_time.strftime('%H:%M')}-{end_time.strftime('%H:%M')}_1000k.txt"
 
     # Clear the log file before starting
-    open('all_logs.txt', 'w').close()
+    open(fileName, 'w').close()
 
-    all_logs = fetch_all_logs(service_name, start_time, end_time)
+    all_logs = fetch_all_logs(service_name, start_time, end_time, fileName)
 
-    print("Log fetching complete. All logs have been written to 'all_logs.txt'.")
+    print(f"Log fetching complete. All logs have been written to {fileName}")
+

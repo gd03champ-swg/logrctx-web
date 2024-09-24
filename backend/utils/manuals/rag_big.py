@@ -21,6 +21,9 @@ bedrock_oregon = boto3.client('bedrock-runtime', region_name='us-west-2') # for 
 
 def generate_rag_response(logs, query, bedrock=bedrock_oregon):
 
+    # Step 0: Truncate logs to 2000 characters each
+    logs = [middle_truncate(log, 2000) for log in logs] # this would make logs returned to prompt as truncated
+
     # Step 1: Embed Logs and Query using Bedrock
     print("Embedding log lines...")
 
@@ -31,6 +34,9 @@ def generate_rag_response(logs, query, bedrock=bedrock_oregon):
     while True:
 
         query = input("Enter your query: ")
+
+        if query == "exit":
+            break
 
         # Convert the query to an embedding
         print("Embedding query: ", query)
@@ -44,9 +50,10 @@ def generate_rag_response(logs, query, bedrock=bedrock_oregon):
         print("Generating response...")
         # Prompt construction for the RAG model for using retrieved logs to answer users query for mistral 7b instruct model
         prompt = f'''
-        You are an RAG system named *logrctx AI* for log analysis and given some extracted parts from logs as context through RAG system along with a question to answer.
+        You are an RAG system named *LogrCtx AI* for log analysis and given some extracted parts from logs as context through RAG system along with a question to answer.
         Prefer for visually appealing response and use time from the logs in your response whenever possible needed for clearer response.
         Note that the logs in given context is reduced and will have count of occurence in eol in pattern like (xN) where N denotes number of times the log occured.
+        And also logs are truncated in middle for better performance, where truncated logs are represented as '...' as the part of this RAG system.
         Keep in mind not to talk about what the logs are, it's structure, what they mean or printing logs itself, but to answer the question using the logs by summarizing them.
         Also the provided below logs are the most relevant logs to the question asked but not all logs and these logs are internal to Swiggy.
         You're response should be helpful and informative so make it detailed.
@@ -86,7 +93,8 @@ def embed_text(text, input_type, truncate, bedrock=bedrock_mumbai):
 def perform_similarity_search(embedded_logs, embedded_query, original_logs):
     similarities = cosine_similarity([embedded_query], embedded_logs)
     best_indices = np.argsort(similarities[0])[-30:]  # Get top 10 relevant lines
-    return "\n".join([original_logs[i][:2000] for i in best_indices]) # Truncate to 2000 characters in case of long logs
+    #return "\n".join([original_logs[i][:2000] for i in best_indices]) # Truncate to 2000 characters in case of long logs
+    return "\n".join([original_logs[i] for i in best_indices])
 
 # Function to truncate a string in the middle
 def middle_truncate(text, max_length=2000):
@@ -113,10 +121,10 @@ def middle_truncate(text, max_length=2000):
 if __name__ == "__main__":
 
     # load logs from log file
-    with open("logs/insight2_dash-cart/drain_dash-cart_10-10:10_0.25agg.log", "r") as file:
+    with open("logs/insight5_payment-presentation-service/drain_payment-presentation-service_12:22-12:22:15_0.5agg.log", "r") as file:
         logs = file.readlines()
 
-    query = "Bring up any anamolies as insights like errors or anything that needs attension in detail"
+    query = "Bring up any anamolies or errors as insights that needs attension in detail"
 
     print(generate_rag_response(logs, query))
 
