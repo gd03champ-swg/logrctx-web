@@ -112,7 +112,7 @@ def fetch_all_logs(service_name, start_time, end_time, file_name, log_cap=10000)
             print(f"Fetched {len(logs)} logs, total logs so far: {len(all_logs)}")
 
             # stop if fetched log lines are more than 100,000
-            if len(all_logs) >= 1000000:
+            if len(all_logs) >= 700000:
                 print("Fetched more than 10,00,000 logs. Stopping.")
                 print(f"Actual time range of fetched logs: {start_time} to {nanoseconds_to_datetime(current_start_time_ns)}")
                 break
@@ -136,11 +136,11 @@ url = os.getenv("LOKI_URL") + "/loki/api/v1/query_range"
 
 # Example usage
 if __name__ == "__main__":
-    service_name = "dash-business-metric-service"
-    start_time = datetime(2024, 9, 20, 12, 30, tzinfo=pytz.UTC)
-    end_time = datetime(2024, 9, 20, 12, 45, tzinfo=pytz.UTC)
+    service_name = "core-pricing-service"
+    start_time = datetime(2024, 9, 24, 12, 30, tzinfo=pytz.UTC)
+    end_time = datetime(2024, 9, 24, 12, 45, tzinfo=pytz.UTC)
 
-    fileName = f"logs/insight5_{service_name}/raw_{service_name}_{start_time.strftime('%H:%M')}-{end_time.strftime('%H:%M')}_1000k.txt"
+    fileName = f"logs/insight8_{service_name}/raw_{service_name}_{start_time.strftime('%H:%M')}-{end_time.strftime('%H:%M')}_1m.txt"
 
     # Clear the log file before starting
     open(fileName, 'w').close()

@@ -39,8 +39,6 @@ const Dashboard = () => {
   const [rawLogs2Len, setRawLogs2Len] = useState(0);
   const [reducedLogsLen, setReducedLogsLen] = useState(0);
   const [reducedLogs2Len, setReducedLogs2Len] = useState(0);
-  const [wrapLines, setWrapLines] = useState(true);
-  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [summarizerLoading, setSummarizerLoading] = useState(false);
@@ -143,7 +141,6 @@ const Dashboard = () => {
       form.setFieldsValue({ time_range: [startTime, endTime] });
     }
   }
-
   // Handle predefined time range selection
   const handlePredefinedTimeRange = (value) => {
     const endTime = dayjs();
@@ -159,7 +156,6 @@ const Dashboard = () => {
     setSelectedQuickRange(null);  // Reset quick select highlight
   };
 
-  // Add debounce to search input
   const handleSearch = useCallback(
     debounce((value) => {
       setSearchTerm(value);
@@ -399,7 +395,12 @@ const Dashboard = () => {
       // Remove double quotes from the logs
       const myReducedLogs = [];
       data.reduced_logs.forEach((log) => {
-        const logObj = log.replace(/["']/g, '');
+        const logObj = log
+                          .replace(/^\[\d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2}\] /, '')
+                          .replace(/^"|"$/g, '')
+                          .replace(/\n/g, '')
+                          .replace(/\\/g, '')
+                          .replace(/["']/g, '');
         myReducedLogs.push(logObj);
       });
   
@@ -536,7 +537,12 @@ const Dashboard = () => {
       // Remove double quotes from the logs
       const myReducedLogs = [];
       data.reduced_logs.forEach((log) => {
-        const logObj = log.replace(/["']/g, '');
+        const logObj = log
+                          .replace(/^\[\d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2}\] /, '')
+                          .replace(/^"|"$/g, '')
+                          .replace(/\n/g, '')
+                          .replace(/\\/g, '')
+                          .replace(/["']/g, '');
         myReducedLogs.push(logObj);
       });
   
@@ -647,12 +653,6 @@ const Dashboard = () => {
       behavior: 'smooth',
     });
   };
-  
-  const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen);
-    scrollToBottom();
-    openNotification('info', 'Full Screen Mode', 'You have toggled full screen mode');
-  };
 
   const toggleDualServiceCompare = () => {
 
@@ -716,10 +716,6 @@ const Dashboard = () => {
                   filteredLogs={filteredLogs}
                   showOnly={showOnly}
                   setShowOnly={setShowOnly}
-                  wrapLines={wrapLines}
-                  setWrapLines={setWrapLines}
-                  isFullScreen={isFullScreen}
-                  toggleFullScreen={toggleFullScreen}
                   handleSearch={handleSearch}
                   handleDownload={handleDownload}
                   animateButton={animateButton}

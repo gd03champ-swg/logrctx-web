@@ -156,6 +156,7 @@ const App = () => {
 
               {/* Private routes */}
               <Route path="/" element={<PrivateRoute element={Dashboard} />} />
+              <Route path="/period-analysis" element={<PrivateRoute element={UnderConstruction} />} />
               <Route path="/compare" element={<PrivateRoute element={ComparitiveDashboard} />} />
               <Route path="/history" element={<PrivateRoute element={AnalysisHistory} />} />
               <Route path="/api-token" element={<PrivateRoute element={APITokenPage} />} />

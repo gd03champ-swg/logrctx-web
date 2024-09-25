@@ -92,7 +92,7 @@ def embed_text(text, input_type, truncate, bedrock=bedrock_mumbai):
 
 def perform_similarity_search(embedded_logs, embedded_query, original_logs):
     similarities = cosine_similarity([embedded_query], embedded_logs)
-    best_indices = np.argsort(similarities[0])[-30:]  # Get top 10 relevant lines
+    best_indices = np.argsort(similarities[0])[-25:]  # Get top 10 relevant lines
     #return "\n".join([original_logs[i][:2000] for i in best_indices]) # Truncate to 2000 characters in case of long logs
     return "\n".join([original_logs[i] for i in best_indices])
 
@@ -121,7 +121,7 @@ def middle_truncate(text, max_length=2000):
 if __name__ == "__main__":
 
     # load logs from log file
-    with open("logs/insight5_payment-presentation-service/drain_payment-presentation-service_12:22-12:22:15_0.5agg.log", "r") as file:
+    with open("logs/insight7_dash-enrichment-service/drain_dash-enrichment-service_12:30-12:45_1m_0.001agg.log", "r") as file:
         logs = file.readlines()
 
     query = "Bring up any anamolies or errors as insights that needs attension in detail"

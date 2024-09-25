@@ -92,13 +92,14 @@
 
 
 - sort logs and tabular content
-
+- shrink
 
 - longer period time comparative analysis (listen to rec)
     - take logs in chunk, drain, extract patterns and store.
     - then do the same wth another time and compare the patterm
     - llm analysis on this comparitive pattern
     - stocasticity (there are some ways to fix this too)
+
 
 - step retrieval automate async queue ( see loki logs if err )
 - automatic codebuild -> ecr migration
@@ -118,7 +119,8 @@
 
 # insights
 
-- dash-business-metric-service
+- dash-data-source [done]
+
 
 
 
