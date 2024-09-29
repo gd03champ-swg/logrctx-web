@@ -82,6 +82,13 @@ async def reduce_logs(request: Request, user: dict = Depends(get_current_user)):
         #    message = "No logs found for given time range."
         #    print(message)
         #    return {"message": message}
+
+        # this is caught and custom error thrown in loki_client.py
+        # Catch HTTPConnectionPool(host='localhost', port=3100): Read timed out. (read timeout=15) error return message
+        #if "Read timed out" in str(e):
+        #    message = "Logman is taking too long to respond. Please try again later."
+        #    print(message)
+        #    return {"message": message}
         
         print(e)
         return {"message": str(e)}

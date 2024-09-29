@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000):
+def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000, retries=3):
 
     # Construct the base query
     query = f'{{service="{service_name}"}}'
@@ -26,8 +26,18 @@ def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000)
 
     print("Params: ", params)
 
-    # Make the GET request to Loki
-    response = requests.get(url, params=params)
+    try:
+        # Make the GET request to Loki
+        response = requests.get(url, params=params, timeout=5)
+    except requests.exceptions.Timeout:
+        if retries < 1:
+            raise RuntimeError("Request timed out. Please try again later.")
+        else:
+            retries -= 1
+            log_cap = int(log_cap / 2) # Reduce the log cap to ease the server load
+            print(f"Request timed out. {retries} retries more... Trying with log cap {log_cap}...")
+            return get_logs(service_name, start_time, end_time, error_logs_only, log_cap, retries)
+
 
     # Check the response
     if response.status_code == 200:
@@ -48,10 +58,11 @@ def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000)
         
         if count == 0:
             raise RuntimeError("No logs found for given time range.")
+        
     
     # Recursively reduce log cap if 413 status code is returned
     elif response.status_code == 413:
-        new_log_cap = log_cap - 500
+        new_log_cap = (log_cap / 2) # Reduce the log cap to ease the server load
         print(f"Log cap exceeded. Reducing log cap to {new_log_cap} and retrying...")
         return get_logs(service_name, start_time, end_time, error_logs_only, new_log_cap)
 

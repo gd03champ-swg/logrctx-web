@@ -89,10 +89,10 @@
 
 - explore [logai](https://github.com/salesforce/logai) (shouldn't be a question on this) [dome]
 - prompt edit fix [done]
+- sort logs and tabular content [done]
 
-
-- sort logs and tabular content
-- shrink
+- loki time out error with retry logic
+- estimate time counter
 
 - longer period time comparative analysis (listen to rec)
     - take logs in chunk, drain, extract patterns and store.
@@ -100,7 +100,7 @@
     - llm analysis on this comparitive pattern
     - stocasticity (there are some ways to fix this too)
 
-
+- optimize logging
 - step retrieval automate async queue ( see loki logs if err )
 - automatic codebuild -> ecr migration
 
@@ -120,7 +120,33 @@
 # insights
 
 - dash-data-source [done]
-
+- 
+- dash-enrichment-service 2.35 TB [done]
+- core-pricing-service 1.93 TB [done]
+3
+offer-server
+1.75 TB
+4
+pricing-worker
+1.68 TB
+5
+shaktimaan
+1.30 TB
+6
+dash-data-service
+1.05 TB
+7
+core-discounting-server
+971 GB
+8
+vendor-insights
+970 GB
+9
+crm-track-service
+920 GB
+10
+rate-card-service
+865 GB
 
 
 
@@ -174,8 +200,6 @@ Output tokens = max 10k tokens  ->  10*0.0144 = 0.144usd = 12inr
 
 
 
-
-
 ❯ kubectl port-forward -n logman svc/loki-query-frontend 3100:3100
 
 ❯ aws ssm start-session --target i-0508f01437b7c9158 --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["3100"],"localPortNumber":["3100"]}' --region ap-southeast-1
@@ -183,8 +207,26 @@ Output tokens = max 10k tokens  ->  10*0.0144 = 0.144usd = 12inr
 
 
 
+---------------------
+
+Time out issue
+    - not with client app (backend time out error)
+    - not with backend (working locally, most request works)
+        - if so, it could be uvicorn handling parallel requests probably ? (have to check this)
+    - not resource limits. It's reduced but still occurs in little amount
+    - most probably it's k8s. 
+        - suspecting request going to some pods are not taken in or responded. seeing some idle pods (have to check this)
+        - probably by targetting all request to specific pod and checking one by one
+    - not loki. works when hit same endpoint from local
+        - but sometimes even from local (loki-pignator) querier hangs indifinetly (check this)
+    - api works when restarted for sometime and issue resumes after some quests
+        - could be loki timeput isn't cascaded and all pod goes into wait state one by one (possible theory)
+        - custom timeout btw loki and backend could fix this
 
 
+```
+POST https://logrctx-api.swiggyops.de/reduce net::ERR_FAILED 504 (Gateway Timeout)
+```
 
 
 
