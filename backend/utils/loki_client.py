@@ -62,7 +62,7 @@ def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000,
     
     # Recursively reduce log cap if 413 status code is returned
     elif response.status_code == 413:
-        new_log_cap = (log_cap / 2) # Reduce the log cap to ease the server load
+        new_log_cap = int(log_cap / 2) # Reduce the log cap to ease the server load
         print(f"Log cap exceeded. Reducing log cap to {new_log_cap} and retrying...")
         return get_logs(service_name, start_time, end_time, error_logs_only, new_log_cap)
 
