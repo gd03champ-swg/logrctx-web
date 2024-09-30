@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: backend
-        image: gd03/logrctx-web:backend
+        #image: gd03/logrctx-web:backend
+        image: 157529275398.dkr.ecr.ap-southeast-1.amazonaws.com/logrctx/backend:latest
         imagePullPolicy: Always
         env:
 
@@ -96,7 +97,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: gd03/logrctx-web:frontend
+        #image: gd03/logrctx-web:frontend
+        image: 157529275398.dkr.ecr.ap-southeast-1.amazonaws.com/logrctx/frontend:latest
         imagePullPolicy: Always
         # Environment Variables
         env:

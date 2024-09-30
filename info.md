@@ -90,9 +90,8 @@
 - explore [logai](https://github.com/salesforce/logai) (shouldn't be a question on this) [dome]
 - prompt edit fix [done]
 - sort logs and tabular content [done]
-
-
 - loki time out error with retry logic [done]
+
 
 
 - longer period time comparative analysis (listen to rec)
@@ -102,6 +101,7 @@
     - stocasticity (there are some ways to fix this too)
 
 - estimate time counter
+- persisting logs and insights on page switching
 
 - optimize logging
 - step retrieval automate async queue ( see loki logs if err )
@@ -131,29 +131,7 @@
 - dash-enrichment-service 2.35 TB [done]
 - core-pricing-service 1.93 TB [done]
 - ads-serving [done]
-- offer-server 1.75 TB
-
-4
-pricing-worker
-1.68 TB
-5
-shaktimaan
-1.30 TB
-6
-dash-data-service
-1.05 TB
-7
-core-discounting-server
-971 GB
-8
-vendor-insights
-970 GB
-9
-crm-track-service
-920 GB
-10
-rate-card-service
-865 GB
+- offer-server 1.75 TB [done]
 
 
 
@@ -198,21 +176,23 @@ Input tokens = max 65k tokens   ->  65*0.0048 = 0.312usd = 26inr
 Output tokens = max 10k tokens  ->  10*0.0144 = 0.144usd = 12inr
 
 26 + 12 = 38 inr per invocation
--------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
+--------------------------------------------------------------------------------------------------------------------------------------
 
 
 ❯ kubectl port-forward -n logman svc/loki-query-frontend 3100:3100
 
 ❯ aws ssm start-session --target i-0508f01437b7c9158 --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["3100"],"localPortNumber":["3100"]}' --region ap-southeast-1
 
+------
 
+# shuttle ecr login
+❯ aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 157529275398.dkr.ecr.ap-southeast-1.amazonaws.com
 
+# build and push backend
+❯ docker buildx build --push --platform linux/arm64 -t 157529275398.dkr.ecr.ap-southeast-1.amazonaws.com/logrctx/backend:latest .
+
+# build and push frontend
+❯ docker buildx build --push --platform linux/arm64 -t 157529275398.dkr.ecr.ap-southeast-1.amazonaws.com/logrctx/frontend:latest .
 
 ---------------------
 
@@ -226,9 +206,10 @@ Time out issue
         - probably by targetting all request to specific pod and checking one by one
     - not loki. works when hit same endpoint from local
         - but sometimes even from local (loki-pignator) querier hangs indifinetly (check this)
-    - api works when restarted for sometime and issue resumes after some quests
+    - api works when restarted for sometime and issue resumes after some quests [this is the issue]
         - could be loki timeput isn't cascaded and all pod goes into wait state one by one (possible theory)
         - custom timeout btw loki and backend could fix this
+    - file rca maybe
 
 
 ```
