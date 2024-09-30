@@ -2,7 +2,7 @@ from drain3 import TemplateMiner
 from drain3.template_miner_config import TemplateMinerConfig
 from tqdm import tqdm
 
-def drain_logs(logs, drain_sim_th=0.00001, target_reduction=0.15):
+def drain_logs(logs, drain_sim_th=0.1, target_reduction=0.15):
     # Set up Drain3 TemplateMiner
     config = TemplateMinerConfig()
     config.drain_sim_th = drain_sim_th
@@ -74,7 +74,7 @@ def reduce_from_file(input_file, output_file):
 if __name__ == "__main__":
     print("Reducing logs...")
     reduce_from_file(
-        'logs/insight7_dash-enrichment-service/raw_dash-enrichment-service_12:30-12:45_1m.txt', 
-        'logs/insight7_dash-enrichment-service/drain_dash-enrichment-service_12:30-12:45_1m_0.0001agg.log'
+        'logs/insight10_offer-server/raw_offer-server_12:30-12:45_450k.txt', 
+        'logs/insight10_offer-server/drain_offer-server_12:30-12:45_450k_0.1agg.log' 
         )
     print("Logs reduced successfully.")

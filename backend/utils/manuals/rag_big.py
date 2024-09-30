@@ -121,10 +121,10 @@ def middle_truncate(text, max_length=2000):
 if __name__ == "__main__":
 
     # load logs from log file
-    with open("logs/insight7_dash-enrichment-service/drain_dash-enrichment-service_12:30-12:45_1m_0.001agg.log", "r") as file:
+    with open("logs/insight10_offer-server/drain_offer-server_12:30-12:45_450k_0.1agg.log", "r") as file:
         logs = file.readlines()
 
-    query = "Bring up any anamolies or errors as insights that needs attension in detail"
+    query = "Bring up any anamolies or errors as insights that needs attension in detail with numbers and time"
 
     print(generate_rag_response(logs, query))
 

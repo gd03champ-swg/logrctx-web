@@ -91,14 +91,17 @@
 - prompt edit fix [done]
 - sort logs and tabular content [done]
 
-- loki time out error with retry logic
-- estimate time counter
+
+- loki time out error with retry logic [done]
+
 
 - longer period time comparative analysis (listen to rec)
     - take logs in chunk, drain, extract patterns and store.
     - then do the same wth another time and compare the patterm
     - llm analysis on this comparitive pattern
     - stocasticity (there are some ways to fix this too)
+
+- estimate time counter
 
 - optimize logging
 - step retrieval automate async queue ( see loki logs if err )
@@ -119,13 +122,17 @@
 
 # insights
 
+- interocitor [done]
+- dash-cart [done]
+- gandalf [done]
+- dash-orderability [done]
+- payment-presentation-service [done]
 - dash-data-source [done]
-- 
 - dash-enrichment-service 2.35 TB [done]
 - core-pricing-service 1.93 TB [done]
-3
-offer-server
-1.75 TB
+- ads-serving [done]
+- offer-server 1.75 TB
+
 4
 pricing-worker
 1.68 TB

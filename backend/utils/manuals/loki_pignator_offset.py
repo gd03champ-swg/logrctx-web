@@ -36,7 +36,7 @@ def get_total_log_count(service_name, start_time_ns, end_time_ns):
     
     return None
 
-def get_logs(service_name, start_time_ns, end_time_ns, log_cap=10000):
+def get_logs(service_name, start_time_ns, end_time_ns, log_cap=10000, retries=3):
     params = {
         'query': f'{{service="{service_name}"}}',
         'start': start_time_ns,
@@ -48,7 +48,18 @@ def get_logs(service_name, start_time_ns, end_time_ns, log_cap=10000):
     print(f"Fetching logs from {nanoseconds_to_datetime(start_time_ns)} to {nanoseconds_to_datetime(end_time_ns)} (UTC)")
     print("Params: ", params)
 
-    response = requests.get(url, params=params)
+
+    try:
+        # Make the GET request to Loki
+        response = requests.get(url, params=params, timeout=5)
+    except requests.exceptions.Timeout:
+        if retries < 1:
+            raise RuntimeError("Request timed out. Please try again later.")
+        else:
+            retries -= 1
+            log_cap = int(log_cap / 2) # Reduce the log cap to ease the server load
+            print(f"Request timed out. {retries} retries more... Trying with log cap {log_cap}...")
+            return get_logs(service_name, start_time_ns, end_time_ns, log_cap, retries)
 
     if response.status_code == 200:
         print("Logs fetched successfully.")
@@ -71,14 +82,14 @@ def get_logs(service_name, start_time_ns, end_time_ns, log_cap=10000):
         return raw_logs, latest_timestamp
 
     elif response.status_code == 413:
-        new_log_cap = log_cap - 500
+        new_log_cap = int(log_cap / 2) # Reduce the log cap to ease the server load
         print(f"Log cap exceeded. Reducing log cap to {new_log_cap} and retrying...")
         return get_logs(service_name, start_time_ns, end_time_ns, new_log_cap)
 
     else:
         raise RuntimeError(f"{response.status_code} - {response.text}")
 
-def fetch_all_logs(service_name, start_time, end_time, file_name, log_cap=10000):
+def fetch_all_logs(service_name, start_time, end_time, file_name):
     all_logs = []
     current_start_time_ns = datetime_to_nanoseconds(start_time)
     end_time_ns = datetime_to_nanoseconds(end_time)
@@ -89,7 +100,7 @@ def fetch_all_logs(service_name, start_time, end_time, file_name, log_cap=10000)
     
     with tqdm(total=100, desc="Overall Progress", unit="%") as pbar:
         while current_start_time_ns < end_time_ns:
-            logs, latest_timestamp = get_logs(service_name, current_start_time_ns, end_time_ns, log_cap)
+            logs, latest_timestamp = get_logs(service_name, current_start_time_ns, end_time_ns)
             
             # Update logs to file immediately
             with open(file_name, 'a') as f:
@@ -111,8 +122,8 @@ def fetch_all_logs(service_name, start_time, end_time, file_name, log_cap=10000)
             print(f"Current time: {datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S %Z')}")
             print(f"Fetched {len(logs)} logs, total logs so far: {len(all_logs)}")
 
-            # stop if fetched log lines are more than 100,000
-            if len(all_logs) >= 700000:
+            # stop if fetched log lines are more than 10,00,000
+            if len(all_logs) >= 1000000:
                 print("Fetched more than 10,00,000 logs. Stopping.")
                 print(f"Actual time range of fetched logs: {start_time} to {nanoseconds_to_datetime(current_start_time_ns)}")
                 break
@@ -136,11 +147,11 @@ url = os.getenv("LOKI_URL") + "/loki/api/v1/query_range"
 
 # Example usage
 if __name__ == "__main__":
-    service_name = "core-pricing-service"
-    start_time = datetime(2024, 9, 24, 12, 30, tzinfo=pytz.UTC)
-    end_time = datetime(2024, 9, 24, 12, 45, tzinfo=pytz.UTC)
+    service_name = "offer-server"
+    start_time = datetime(2024, 9, 29, 12, 30, tzinfo=pytz.UTC)
+    end_time = datetime(2024, 9, 29, 12, 45, tzinfo=pytz.UTC)
 
-    fileName = f"logs/insight8_{service_name}/raw_{service_name}_{start_time.strftime('%H:%M')}-{end_time.strftime('%H:%M')}_1m.txt"
+    fileName = f"logs/insight10_{service_name}/raw_{service_name}_{start_time.strftime('%H:%M')}-{end_time.strftime('%H:%M')}_1m.txt"
 
     # Clear the log file before starting
     open(fileName, 'w').close()

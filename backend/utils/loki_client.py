@@ -28,10 +28,10 @@ def get_logs(service_name, start_time, end_time, error_logs_only, log_cap=10000,
 
     try:
         # Make the GET request to Loki
-        response = requests.get(url, params=params, timeout=5)
+        response = requests.get(url, params=params, timeout=15)
     except requests.exceptions.Timeout:
         if retries < 1:
-            raise RuntimeError("Request timed out. Please try again later.")
+            raise RuntimeError("Request timed out in logman. Please try again later.")
         else:
             retries -= 1
             log_cap = int(log_cap / 2) # Reduce the log cap to ease the server load
